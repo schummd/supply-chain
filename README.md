@@ -1,14 +1,16 @@
-In the terminal, intall node.js and npm: ```npm install -g npm```
+Follow the steps to set up:
 
-Install Truffle and Ganache: ```npm install -g ganache-cli truffle```
+1. In the terminal, intall node.js and npm: ```npm install -g npm```
 
-Install web3 and solc: ```npm install web3 solc```
+2. Install Truffle and Ganache: ```npm install -g ganache-cli truffle```
 
-In a separate terminal window open Ganache: ```ganache-cli```
+3. Install web3 and solc: ```npm install web3 solc```
 
-Then get back to the first terminal and compile contracts: ```truffle compile``` 
+4. In a separate terminal window open Ganache: ```ganache-cli```
 
-Then migrate the contract to the blockchain: ```truffle migrate``` 
+5. Then get back to the first terminal and compile contracts: ```truffle compile``` 
+
+6. Then migrate the contract to the blockchain: ```truffle migrate``` 
 
 --
 
