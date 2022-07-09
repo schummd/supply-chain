@@ -6,11 +6,15 @@ Follow the steps to set up:
 
 3. Install web3 and solc: ```npm install web3 solc```
 
-4. In a separate terminal window open Ganache: ```ganache-cli```
+4. Install Chai package: ```npm install --save-dev chai```  
 
-5. Then get back to the first terminal and compile contracts: ```truffle compile``` 
+5. In a separate terminal window open Ganache: ```ganache-cli```
 
-6. Then migrate the contract to the blockchain: ```truffle migrate``` 
+6. Then get back to the first terminal and compile contracts: ```truffle compile``` 
+
+7. Then migrate the contract to the blockchain: ```truffle migrate```  
+
+8. Run test file: ```truffle test ./test/test_1.js```
 
 --
 
