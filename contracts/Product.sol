@@ -5,6 +5,7 @@ contract ProductContract {
 
     bool internal locked;                   // lock for payments (not sure if necessary yet)
     address owner;
+    address CA; 
 
     // another option to map multiple structs:
     // https://ethereum.stackexchange.com/questions/82157/mapping-multiple-structs-to-a-struct-and-call-them
@@ -18,12 +19,14 @@ contract ProductContract {
         uint256 expiration; 
         address issuer;
         address currentOwner;
+        uint256 temperature;            // keeping temperature of storage from oracle 
     }
 
-    // maps each product entry to an integer  
-    // mapping (uint256 => Product[]) products; 
+    // maps each product ID to a product data   
+    mapping (bytes32 => Product[]) products; 
+
     // alternatively keep as array:
-    Product[] products; 
+    // Product[] products; 
 
     constructor(address _owner) {
         owner = _owner; 
@@ -42,15 +45,54 @@ contract ProductContract {
         locked = false;
     }
 
+    // send generated product ID to off-chain 
+    event sendProductID(bytes32 productID); 
+
+
     /* PRODUCT FUNCTIONS ------------------------------------------------------------------ */
 
     // adds product data hash and conditions hash 
     function addProduct(bytes32 _data, bytes32 _conditions) public {
-        products.push(Product(_data, _conditions, bytes32(0), 0, address(0), msg.sender)); 
+        bytes32 productID = bytes32(keccak256(abi.encodePacked(_data, _conditions))); 
+        products[productID].push(Product(_data, _conditions, bytes32(0), 0, address(0), msg.sender, 0));
+        emit sendProductID(productID);
     }
 
-    function getProduct(uint256 _index) public view returns(bytes32, bytes32, address) {
-        return (products[_index].productHash, products[_index].conditionsHash, products[_index].currentOwner); 
+    // only current owner 
+    function updateProduct(bytes32 _updatedData) public {
+        
+    }
+
+    // 
+    function updateConditions(bytes32 _updateConditions) public {
+
+    }
+
+    // requires oracle 
+    function updateTemperature(uint256 _temperature) public {
+
+    }
+
+    // update certificate data in product - only authorised CA 
+    function updateCertificate(bytes32 _certificate, uint256 _expiration, address _issuer) public {
+
+    }
+
+    function getProduct(bytes32 _productID) public view returns(Product[] memory) {
+        return products[_productID];
+    }
+
+
+    /* CERTIFICATE FUNCTIONS ------------------------------------------------------------------ */
+    
+    // Daria's 
+
+    function verifyCA(address _issuer) public {
+
+    }
+
+    function authoriseCA() public {
+
     }
 
 }
