@@ -6,6 +6,12 @@ const truffleAssert = require('truffle-assertions');
 const timeMachine = require('ganache-time-traveler');
 
 
+// async function getProductID() {
+//     let checkProduct = productInstance.getProduct(ev[0].args[0]); 
+//     return checkProduct; 
+// }
+
+
 contract('Product', (accounts) => {
 
     // contract owner 
@@ -32,15 +38,20 @@ contract('Product', (accounts) => {
         let productHash = web3.utils.sha3('product');
         let conditionsHash = web3.utils.sha3('conditions');
 
+        let newProduct; // keeps the productID
+
         // add a product to the contract 
         await productInstance.addProduct(productHash, conditionsHash, { from: a })
+        await productInstance.getPastEvents().then((ev) => newProduct = ev[0].args[0]); 
+
         // get the product infromation 
-        // let checkProduct = await productInstance.getProduct(0); 
+        let checkProduct = await productInstance.getProduct(newProduct); 
+        // console.log(checkProduct);
         
-        // // check if the data is correct 
-        // assert.equal(checkProduct[0], productHash, "check the supplied product hash is the same as stored"); 
-        // assert.equal(checkProduct[1], conditionsHash, "check the supplied conditions hash is the same as stored"); 
-        // assert.equal(checkProduct[2], a, "check the owner is the same who transacted"); 
+        // check if the data is correct 
+        assert.equal(checkProduct[0], productHash, "check the supplied product hash is the same as stored"); 
+        assert.equal(checkProduct[1], conditionsHash, "check the supplied conditions hash is the same as stored"); 
+        assert.equal(checkProduct[2], a, "check the owner is the same who transacted"); 
     }); 
 
 })

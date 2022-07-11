@@ -23,7 +23,7 @@ contract ProductContract {
     }
 
     // maps each product ID to a product data   
-    mapping (bytes32 => Product[]) products; 
+    mapping (bytes32 => Product) products; 
 
     // alternatively keep as array:
     // Product[] products; 
@@ -46,7 +46,7 @@ contract ProductContract {
     }
 
     // send generated product ID to off-chain 
-    event sendProductID(bytes32 productID); 
+    event productIdentifier(bytes32 productID); 
 
 
     /* PRODUCT FUNCTIONS ------------------------------------------------------------------ */
@@ -54,8 +54,10 @@ contract ProductContract {
     // adds product data hash and conditions hash 
     function addProduct(bytes32 _data, bytes32 _conditions) public {
         bytes32 productID = bytes32(keccak256(abi.encodePacked(_data, _conditions))); 
-        products[productID].push(Product(_data, _conditions, bytes32(0), 0, address(0), msg.sender, 0));
-        emit sendProductID(productID);
+        products[productID].productHash = _data; 
+        products[productID].conditionsHash = _conditions; 
+        products[productID].currentOwner = msg.sender; 
+        emit productIdentifier(productID);
     }
 
     // only current owner 
@@ -78,8 +80,8 @@ contract ProductContract {
 
     }
 
-    function getProduct(bytes32 _productID) public view returns(Product[] memory) {
-        return products[_productID];
+    function getProduct(bytes32 _productID) public view returns(bytes32, bytes32, address) {
+        return (products[_productID].productHash, products[_productID].conditionsHash, products[_productID].currentOwner);
     }
 
 
