@@ -1,9 +1,17 @@
 
-const CARegistry = artifacts.require("CARegistryContract");
-const Product = artifacts.require("ProductContract"); 
+const Registry = artifacts.require("AuthorityRegistry");
+const Product = artifacts.require("Product"); 
 
 module.exports = function(deployer, network, accounts) {
-    const owner = accounts[0]; 
-    deployer.deploy(CARegistry, owner);
-    deployer.deploy(Product, owner); 
+    
+    const owner = accounts[0];              // supply chain contract owner 
+    const DOA = accounts[9];                // Department of Agriculture owns a registry of CAs 
+
+    deployer.then(async() => {
+        await deployer.deploy(Registry, DOA);
+        await deployer.deploy(Product, Registry.address, owner); 
+    });
+
+    // deployer.deploy(Registry, DOA);
+    // deployer.deploy(Product, DOA, owner); 
 }

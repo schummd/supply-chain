@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract CARegistryContract {
+contract AuthorityRegistry {
 
 	// registry of public keys of CA's that are authorised to issue certificates 
 
