@@ -127,28 +127,33 @@ contract('Product', (accounts) => {
     });
 
     it('Anyone can verify a product is tampered with', async() => {
-        let prodVerify = await productInstance.verifyProductHash(batchID, incorrectProductHash);
-        assert.isFalse(prodVerify, 'The product was verified when it should not have been', { from: thirdParty})
+        let prodVerify = await productInstance.verifyProductHash(batchID, incorrectProductHash, { from: thirdParty});
+        assert.isFalse(prodVerify, 'The product was verified when it should not have been')
     });
     
 
     it('Anyone can verify a conditions', async() => {
-        // get a hash of off chain conitions
+        // get a hash of off chain conitions - actual conditions
         let actualConditionsHash = web3.utils.sha3('The required conditions are cold');
-        let condVerify = await productInstance.verifyConditionsHash(batchID, actualConditionsHash);
-        assert.isTrue(condVerify, 'The conditions could not be verified', { from: thirdParty})
+        let condVerify = await productInstance.verifyConditionsHash(batchID, actualConditionsHash, { from: thirdParty});
+        assert.isTrue(condVerify, 'The conditions could not be verified')
     });
 
     it('Anyone can verify conditions are incorrect', async() => {
-        let condVerify = await productInstance.verifyConditionsHash(batchID, incorrectConditionsHash);
-        assert.isFalse(condVerify, 'The conditions were verified when they were incorrect', { from: thirdParty})
+        let condVerify = await productInstance.verifyConditionsHash(batchID, incorrectConditionsHash, { from: thirdParty});
+        assert.isFalse(condVerify, 'The conditions were verified when they were incorrect')
     });
 
     it('Anyone can verify a certificate', async() => {
-        let certVerify = await productInstance.verifyConditionsHash(batchID, reqConditionsHash);
-        assert.isTrue(certVerify, 'The certificate could not be verified', { from: thirdParty})
+        let certVerify = await productInstance.verifyConditionsHash(batchID, reqConditionsHash, { from: thirdParty});
+        assert.isTrue(certVerify, 'The certificate could not be verified')
     });
 
+    it('Only owner can update conditions', async() => {
+        await truffleAssert.reverts(
+            (productInstance.updateConditions(batchID, incorrectConditionsHash, {from: badActor})), "Only authorised address can call this function"
+        );
+    });
 
 
 })
