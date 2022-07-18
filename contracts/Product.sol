@@ -69,7 +69,7 @@ contract Product {
 
     event batchCertificate(bytes32 certificate, bytes signature); 
 
-
+    event newOwner(address owner); 
 
     /* PRODUCT FUNCTIONS ------------------------------------------------------------------ */
 
@@ -98,6 +98,7 @@ contract Product {
     // to add a certificate to their product
     // the producer must still own the batch to request a certificate
     function updateCertAuthorisation(bytes32 _batchID, address _requestedCA) public onlyThis(products[_batchID].producer) {
+        require(products[_batchID].owner == products[_batchID].producer); 
         products[_batchID].authCA = _requestedCA;
     }
     
@@ -106,6 +107,11 @@ contract Product {
         products[_batchID].certificate = _certificate; 
         products[_batchID].signature = _signature; 
         emit batchCertificate(_certificate, _signature);
+    }
+
+    function updateOwner(bytes32 _batchID) public onlyThis(products[_batchID].owner) {
+        
+
     }
 
     /* VERIFICATION FUNCTIONS ----------------------------------------------------------------- */
