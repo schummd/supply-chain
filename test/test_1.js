@@ -1,8 +1,9 @@
+
 const Product = artifacts.require("Product");
 const Registry = artifacts.require("AuthorityRegistry");
+const truffleAssert = require('truffle-assertions');
 
 const assert = require("chai").assert;
-const truffleAssert = require('truffle-assertions');
 const timeMachine = require('ganache-time-traveler');
 
 const { authorityKeys, generateSignature, generateCertificate } = require('../utilities/certificate.js'); 
@@ -17,7 +18,9 @@ contract('Product', (accounts) => {
     const DOA = accounts[9];        // certification registry owner 
 	const owner = accounts[0];      // contract owner 
 	const producer = accounts[1]; 
-	const b = accounts[2]; 
+    const newOwner1 = accounts[2];
+	const newOwner3 = accounts[3]; 
+    const badActor = accounts[4]; 
 
 
 
@@ -102,9 +105,16 @@ contract('Product', (accounts) => {
 
     it('Owner updates product hash', async() => {
         let newProductHash = web3.utils.sha3('I have updated the product quatity');
-        let productResponse = await productInstance.updateProduct(batchID, newProductHash, {from: producer})
+        await productInstance.updateProduct(batchID, newProductHash, {from: producer})
         await productInstance.getPastEvents().then((ev) => batchHash = ev[0].args[0]); 
         assert.equal(batchHash, newProductHash, "product hash was not updated on chain correctly")
+    });
+
+    it('Not owner, cannot update product', async() => {
+        let newProductHash = web3.utils.sha3('I am trying to tamper with product');
+        await truffleAssert.reverts(
+            (productInstance.updateProduct(batchID, newProductHash, {from: badActor})), "Only authorised address can call this function"
+            );
     });
 
 
