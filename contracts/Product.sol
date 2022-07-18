@@ -18,15 +18,16 @@ contract Product {
     struct Batch {
         bytes32 productHash; 
         bytes32 conditionsHash;
+        bool status;                    // the status of the product, true means ok
 
         bytes32 certificate; 
         bytes signature;                // created with web3.eth.sign(), bytes 
-
-        // uint256 expiration;          // not sure if we need it? 
-        // address issuer;
+        address authCA;                 // the CA authorised by producer to update certificate
 
         address currentOwner;
-        uint256 temperature;            // keeping temperature of storage from oracle 
+        address producer;
+
+        uint256 reqTemperature;         // required temp of the product as provided in required conitions
     }
 
     // maps each product ID to a product data   
@@ -41,11 +42,15 @@ contract Product {
     }
 
     // only owner can call the function 
-    modifier onlyOwner(address _owner) { require(msg.sender == _owner); _; }
+    modifier onlyOwner(address _owner) { require(msg.sender == _owner, "You are not the owner of this batch"); _; }
+    // only producer can call the function 
+    modifier onlyProducer(address _producer) { require(msg.sender == _producer,"only a producer can request a certifying authority" ); _; }
     // only after that time can call the function 
     modifier onlyAfter(uint256 _time) { require(block.timestamp > _time); _; }
     // only before that time can call the function 
     modifier onlyBefore(uint256 _time) { require(block.timestamp < _time); _;}
+     // only authorised CA can add a certificate
+    modifier onlyAuthCA(address _CA) { require(msg.sender == _CA, "You do not have permission to modify this information"); _; }
     // lock against reentrancy 
     modifier lock() { 
         require(!locked); 
@@ -59,6 +64,7 @@ contract Product {
     event batchCertificate(bytes32 certificate, bytes signature); 
 
 
+
     /* PRODUCT FUNCTIONS ------------------------------------------------------------------ */
 
     // adds product data hash and conditions hash 
@@ -66,27 +72,35 @@ contract Product {
         bytes32 batchID = bytes32(keccak256(abi.encodePacked(_data, _conditions))); 
         products[batchID].productHash = _data; 
         products[batchID].conditionsHash = _conditions; 
+        products[batchID].status = true;
         products[batchID].currentOwner = msg.sender; 
+        products[batchID].producer = msg.sender;
         emit batchIdentifier(batchID);
     }
 
-    // only current owner 
-    function updateProduct(bytes32 _updatedData) public {
-        
+    // the owner can update the product hash
+    function updateProduct(bytes32 _updatedData, bytes32 _batchID) public onlyOwner(products[_batchID].currentOwner) {
+        products[_batchID].productHash = _updatedData;
     }
 
-    // 
-    function updateConditions(bytes32 _updateConditions) public {
-
+    // the owner can send a new product contions hash
+    function updateConditions(bytes32 _updatedConditions, bytes32 _batchID) public onlyOwner(products[_batchID].currentOwner) {
+        products[_batchID].conditionsHash = _updatedConditions;
     }
 
     // requires oracle 
-    function updateTemperature(uint256 _temperature) public {
-
+    // have restricted to private so anyone cannot call this 
+    // is there a way to resctrict this to the oracle?
+    function compareTemperature(uint256 _temperature, bytes32 _batchID) private returns (bool) {
+        if (_temperature != products[_batchID].reqTemperature) {
+            products[_batchID].status = false;
+            return false;
+        }
+        return true;
     }
 
     // update certificate data in product - only authorised CA 
-    function updateCertificate(bytes32 _batchID, bytes32 _certificate, bytes memory _signature) public {
+    function updateCertificate(bytes32 _batchID, bytes32 _certificate, bytes memory _signature) public onlyAuthCA(products[_batchID].authCA) {
         products[_batchID].certificate = _certificate; 
         products[_batchID].signature = _signature; 
         emit batchCertificate(_certificate, _signature);
@@ -96,8 +110,34 @@ contract Product {
         return (products[_batchID].productHash, products[_batchID].conditionsHash, products[_batchID].currentOwner);
     }
 
+    // allow anyone to verify data in the off chain data store about product
+    function verifyProductHash(bytes32 _offchainHash, bytes32 _batchID) public view returns (bool) {
+        if (products[_batchID].productHash == _offchainHash) { return true;}
+        return false;
+    }
+
+    // allow anyone to verify data in the off chain data store about conditions
+    function verifyConditionsHash(bytes32 _offchainHash, bytes32 _batchID) public view returns (bool){
+        if (products[_batchID].conditionsHash == _offchainHash) { return true;}
+        return false;
+    }
+
+
 
     /* CERTIFICATE FUNCTIONS ------------------------------------------------------------------ */
+
+    // producer calls this function to select a CA of their choice 
+    // to add a certificate to their product
+    // the producer must still own the batch to request a certificate
+    function authoriseCA(bytes32 _batchID, address _requestedCA) public onlyOwner(products[_batchID].currentOwner) onlyProducer(products[_batchID].producer) returns(bool) {
+        // verify that the CA producer authorises to update certificate is 
+        // an authorised CA in the registry
+        if (verifyIssuer(_requestedCA)) {
+            products[_batchID].authCA = _requestedCA;
+            return true;
+        }
+        return false;
+    }
     
     // anyone can send a product ID and verify its certificate
     // should check if the certificate exists first, if not then false 

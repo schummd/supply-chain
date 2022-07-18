@@ -37,7 +37,7 @@ contract('Product', (accounts) => {
 
     it('DOA adding a certifying authority to the registry', async() => {
         CA = await authorityKeys(); // generate random account keys 
-        authorityAddress = CA[0];	// certifying authority private key 
+        authorityAddress = CA[0];	// certifying authority public key
         await registryInstance.addPublicKey(authorityAddress, { from: DOA }); 
         let check = await registryInstance.checkPublicKey(authorityAddress); 
         assert.isTrue(check, "check if public key was added"); 
@@ -47,7 +47,6 @@ contract('Product', (accounts) => {
 
     it('Adding product to the product contract', async() => {
         // generate 2 random hashes for testing
-        
         let productHash = web3.utils.sha3('product');
         let conditionsHash = web3.utils.sha3('conditions');
 
@@ -65,6 +64,8 @@ contract('Product', (accounts) => {
         assert.equal(checkProduct[2], a, "check the owner is the same who transacted"); 
     }); 
 
+
+
     it('Adding certificate to the product', async() => {
         let certData = await generateCertificate(batchID, CA[1]); 
         let certificate = certData[0];
@@ -74,19 +75,30 @@ contract('Product', (accounts) => {
         // console.log(certificate);
         // console.log(signature); 
 
-        await productInstance.updateCertificate(batchID, certificate, signature); 
-        await productInstance.getPastEvents().then((ev) => returnedCertificate = ev[0].args[0]);
-        await productInstance.getPastEvents().then((ev) => returnedSignature = ev[0].args[1]);
-        // console.log(returnedCertificate);
-        // console.log(returnedSignature); 
+        let productHash = web3.utils.sha3('product');
+        let conditionsHash = web3.utils.sha3('conditions');
 
-        assert.equal(certificate, returnedCertificate, "check the certificated stored is the same"); 
-        assert.equal(signature, returnedSignature, "check the signature stored is the same"); 
-    });
+        // producer requests a CA who can then add certificate
+        // make sure they are in the CA registry
+        let authoriseCAresponse = await productInstance.authoriseCA.call(batchID, CA[0], { from: a })
+        assert.isTrue(authoriseCAresponse, "check CA is in CA registry and has been added to the batch")
 
-    it('Verify the certificate of the batch', async() => {
-        let verification = await productInstance.verifyCertificate(batchID);
-        assert.isTrue(verification, "batch certificate was signed by a valid authority"); 
+        // I only commented this out while trying to debug the above issue
+        
+    //     // now can update the certificate
+    //     await productInstance.updateCertificate(batchID, certificate, signature); 
+    //     await productInstance.getPastEvents().then((ev) => returnedCertificate = ev[0].args[0]);
+    //     await productInstance.getPastEvents().then((ev) => returnedSignature = ev[0].args[1]);
+    //     // console.log(returnedCertificate);
+    //     // console.log(returnedSignature); 
+
+    //     assert.equal(certificate, returnedCertificate, "check the certificated stored is the same"); 
+    //     assert.equal(signature, returnedSignature, "check the signature stored is the same"); 
+    // });
+
+    // it('Verify the certificate of the batch', async() => {
+    //     let verification = await productInstance.verifyCertificate(batchID);
+    //     assert.isTrue(verification, "batch certificate was signed by a valid authority"); 
     });
 
 })
