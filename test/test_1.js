@@ -14,13 +14,18 @@ contract('Product', (accounts) => {
     let CA; 
     let batchID; 
     let authorityAddress; 
+    let productHash = web3.utils.sha3('product');
+    let conditionsHash = web3.utils.sha3('conditions');
+    let rejectedProductHash = web3.utils.sha3('I am trying to tamper with product');
+    let newProductHash = web3.utils.sha3('I have updated the product quatity');
 
     const DOA = accounts[9];        // certification registry owner 
 	const owner = accounts[0];      // contract owner 
 	const producer = accounts[1]; 
     const newOwner1 = accounts[2];
-	const newOwner3 = accounts[3]; 
+	const newOwner2 = accounts[3]; 
     const badActor = accounts[4]; 
+    const thirdParty = accounts[5]; 
 
 
 
@@ -48,8 +53,6 @@ contract('Product', (accounts) => {
 
     it('Adding product to the product contract', async() => {
         // generate 2 random hashes for testing
-        let productHash = web3.utils.sha3('product');
-        let conditionsHash = web3.utils.sha3('conditions');
 
         // add a product to the contract 
         await productInstance.addProduct(productHash, conditionsHash, { from: producer })
@@ -104,18 +107,22 @@ contract('Product', (accounts) => {
     });
 
     it('Owner updates product hash', async() => {
-        let newProductHash = web3.utils.sha3('I have updated the product quatity');
         await productInstance.updateProduct(batchID, newProductHash, {from: producer})
         await productInstance.getPastEvents().then((ev) => batchHash = ev[0].args[0]); 
         assert.equal(batchHash, newProductHash, "product hash was not updated on chain correctly")
+        productHash = newProductHash
     });
 
     it('Not owner, cannot update product', async() => {
-        let newProductHash = web3.utils.sha3('I am trying to tamper with product');
         await truffleAssert.reverts(
-            (productInstance.updateProduct(batchID, newProductHash, {from: badActor})), "Only authorised address can call this function"
+            (productInstance.updateProduct(batchID, rejectedProductHash, {from: badActor})), "Only authorised address can call this function"
             );
     });
+
+    it('Anyone can verify a product', async() => {
+        await productInstance.verifyProductHash(batchID, productHash);
+    });
+
 
 
 })
