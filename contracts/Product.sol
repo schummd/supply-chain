@@ -101,12 +101,15 @@ contract Product {
     // to add a certificate to their product
     // the producer must still own the batch to request a certificate
     function updateCertAuthorisation(bytes32 _batchID, address _requestedCA) public onlyThis(products[_batchID].producer) {
-        require(products[_batchID].owner == products[_batchID].producer); 
+        require(verifyIssuer(_requestedCA) == true, "this is not a registered authority");
+        require(products[_batchID].owner == products[_batchID].producer, "You no longer own this batch"); 
         products[_batchID].authCA = _requestedCA;
     }
     
     // update certificate data in product - only authorised CA 
     function updateCertificate(bytes32 _batchID, bytes32 _certificate, bytes memory _signature) public onlyThis(products[_batchID].producer) {
+        require(products[_batchID].owner == products[_batchID].producer, "You no longer own this batch"); 
+        require(products[_batchID].authCA == recoverIssuer(_certificate, _signature), 'This certificate is not from the select authority');
         products[_batchID].certificate = _certificate; 
         products[_batchID].signature = _signature; 
         emit batchCertificate(_certificate, _signature);
