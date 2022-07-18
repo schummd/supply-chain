@@ -123,6 +123,10 @@ contract('Product', (accounts) => {
         await productInstance.verifyProductHash(batchID, productHash);
     });
 
+    it('Anyone can verify a conditions', async() => {
+        await productInstance.verifyConditionsHash(batchID, conditionsHash);
+    });
+
 
 
 })
