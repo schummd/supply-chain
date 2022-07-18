@@ -78,6 +78,20 @@ contract('Product', (accounts) => {
         assert.equal(checkProduct[3], CA[0], "check CA address was assigned to a batch");
     }); 
 
+
+    it('Adding bad certificate to the product', async() => {
+        let BadCA = await authorityKeys();
+        let certData = await generateCertificate(batchID, BadCA[1]); 
+        let certificate = certData[0];
+        let signature = certData[1]; 
+
+        await truffleAssert.reverts(
+            (productInstance.updateCertificate(batchID, certificate, signature, {from: producer})), "This certificate is not from the select authority"
+        );
+
+    });
+    
+
     it('Adding certificate to the product', async() => {
         let certData = await generateCertificate(batchID, CA[1]); 
         let certificate = certData[0];
@@ -102,6 +116,7 @@ contract('Product', (accounts) => {
          let verification = await productInstance.verifyCertificate(batchID);
          assert.isTrue(verification, "batch certificate was signed by a valid authority"); 
     });
+
 
     it('Verify that certificate has been issued by requested CA', async() => {
         let verifyCert = await productInstance.verifyIssuerAuthorisation.call(batchID); 
