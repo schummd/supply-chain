@@ -47,6 +47,7 @@ contract('Product', (accounts) => {
 
     it('Adding product to the product contract', async() => {
         // generate 2 random hashes for testing
+        
         let productHash = web3.utils.sha3('product');
         let conditionsHash = web3.utils.sha3('conditions');
 

@@ -8,7 +8,7 @@ module.exports = function(deployer, network, accounts) {
     const DOA = accounts[9];                // Department of Agriculture owns a registry of CAs 
 
     deployer.then(async() => {
-        await deployer.deploy(Registry, DOA);
+        await deployer.deploy(Registry, DOA); // on a different network 
         await deployer.deploy(Product, Registry.address, owner); 
     });
 
