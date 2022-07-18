@@ -16,7 +16,7 @@ contract('Product', (accounts) => {
 
     const DOA = accounts[9];        // certification registry owner 
 	const owner = accounts[0];      // contract owner 
-	const a = accounts[1]; 
+	const producer = accounts[1]; 
 	const b = accounts[2]; 
 
 
@@ -43,15 +43,13 @@ contract('Product', (accounts) => {
         assert.isTrue(check, "check if public key was added"); 
     });
 
-
-
     it('Adding product to the product contract', async() => {
         // generate 2 random hashes for testing
         let productHash = web3.utils.sha3('product');
         let conditionsHash = web3.utils.sha3('conditions');
 
         // add a product to the contract 
-        await productInstance.addProduct(productHash, conditionsHash, { from: a })
+        await productInstance.addProduct(productHash, conditionsHash, { from: producer })
         await productInstance.getPastEvents().then((ev) => batchID = ev[0].args[0]); 
 
         // get the product infromation 
@@ -61,10 +59,16 @@ contract('Product', (accounts) => {
         // check if the data is correct 
         assert.equal(checkProduct[0], productHash, "check the supplied product hash is the same as stored"); 
         assert.equal(checkProduct[1], conditionsHash, "check the supplied conditions hash is the same as stored"); 
-        assert.equal(checkProduct[2], a, "check the owner is the same who transacted"); 
+        assert.equal(checkProduct[2], producer, "check the owner is the same who transacted"); 
     }); 
 
-
+    it('Producer authorises the CA to issue the certificate', async() => {
+        await productInstance.updateCertAuthorisation(batchID, CA[0], { from: producer })
+        let checkProduct = await productInstance.getProduct(batchID); 
+        // console.log(CA[0]);
+        // console.log(checkProduct); 
+        assert.equal(checkProduct[3], CA[0], "check CA address was assigned to a batch");
+    }); 
 
     it('Adding certificate to the product', async() => {
         let certData = await generateCertificate(batchID, CA[1]); 
@@ -72,33 +76,28 @@ contract('Product', (accounts) => {
         let signature = certData[1]; 
         let returnedCertificate; 
         let returnedSignature; 
+
         // console.log(certificate);
         // console.log(signature); 
 
-        let productHash = web3.utils.sha3('product');
-        let conditionsHash = web3.utils.sha3('conditions');
+        await productInstance.updateCertificate(batchID, certificate, signature, { from: producer }); 
+        await productInstance.getPastEvents().then((ev) => returnedCertificate = ev[0].args[0]);
+        await productInstance.getPastEvents().then((ev) => returnedSignature = ev[0].args[1]);
+        // console.log(returnedCertificate);
+        // console.log(returnedSignature); 
 
-        // producer requests a CA who can then add certificate
-        // make sure they are in the CA registry
-        let authoriseCAresponse = await productInstance.authoriseCA.call(batchID, CA[0], { from: a })
-        assert.isTrue(authoriseCAresponse, "check CA is in CA registry and has been added to the batch")
+        assert.equal(certificate, returnedCertificate, "check the certificated stored is the same"); 
+        assert.equal(signature, returnedSignature, "check the signature stored is the same"); 
+    });
 
-        // I only commented this out while trying to debug the above issue
-        
-    //     // now can update the certificate
-    //     await productInstance.updateCertificate(batchID, certificate, signature); 
-    //     await productInstance.getPastEvents().then((ev) => returnedCertificate = ev[0].args[0]);
-    //     await productInstance.getPastEvents().then((ev) => returnedSignature = ev[0].args[1]);
-    //     // console.log(returnedCertificate);
-    //     // console.log(returnedSignature); 
+    it('Verify the certificate of the batch', async() => {
+         let verification = await productInstance.verifyCertificate(batchID);
+         assert.isTrue(verification, "batch certificate was signed by a valid authority"); 
+    });
 
-    //     assert.equal(certificate, returnedCertificate, "check the certificated stored is the same"); 
-    //     assert.equal(signature, returnedSignature, "check the signature stored is the same"); 
-    // });
-
-    // it('Verify the certificate of the batch', async() => {
-    //     let verification = await productInstance.verifyCertificate(batchID);
-    //     assert.isTrue(verification, "batch certificate was signed by a valid authority"); 
+    it('Verify that certificate has been issued by requested CA', async() => {
+        let verifyCert = await productInstance.verifyIssuerAuthorisation.call(batchID); 
+        assert.isTrue(verifyCert, "certificate issued by expected certifying authority");
     });
 
 })
