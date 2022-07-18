@@ -46,7 +46,7 @@ contract Product {
 
     // only owner can call the function 
     // modifier onlyOwner(address _owner) { require(msg.sender == _owner, "You are not the owner of this batch"); _; }
-    // only producer can call the function 
+    // // only producer can call the function 
     // modifier onlyProducer(address _producer) { require(msg.sender == _producer,"only a producer can request a certifying authority" ); _; }
     
     // only after that time can call the function 
@@ -55,7 +55,7 @@ contract Product {
     // modifier onlyBefore(uint256 _time) { require(block.timestamp < _time); _;}
     
     // only authorised CA can add a certificate
-    modifier onlyAuthCA(address _CA) { require(msg.sender == _CA, "You do not have permission to modify this information"); _; }
+    // modifier onlyAuthCA(address _CA) { require(msg.sender == _CA, "You do not have permission to modify this information"); _; }
     
     // lock against reentrancy 
     modifier lock() { 
@@ -68,6 +68,8 @@ contract Product {
     event batchIdentifier(bytes32 productID); 
 
     event batchCertificate(bytes32 certificate, bytes signature); 
+
+    event batchProduct(bytes32 productHash);
 
     event newOwner(address owner); 
 
@@ -87,6 +89,7 @@ contract Product {
     // the owner can update the product hash
     function updateProduct(bytes32 _batchID, bytes32 _updatedData) public onlyThis(products[_batchID].owner) {
         products[_batchID].productHash = _updatedData;
+        emit batchProduct(_updatedData);
     }
 
     // the owner can send a new product contions hash
@@ -109,8 +112,10 @@ contract Product {
         emit batchCertificate(_certificate, _signature);
     }
 
-    function updateOwner(bytes32 _batchID, address _newOwner) public onlyThis(products[_batchID].owner) {
-        require(verifyCertificate(_batchID) == true); 
+    function updateOwner(bytes32 _batchID, address _newOwner, bytes32 _offchainConditions, bytes32 _offchainProduct) public onlyThis(products[_batchID].owner) {
+        require(verifyCertificate(_batchID) == true, "certificate could not be verified"); 
+        require (verifyConditionsHash(_batchID, _offchainConditions) == true, "product conditions could not be verified");
+        require (verifyProductHash(_batchID, _offchainProduct) == true, "product data could not be verified");
         products[_batchID].owner = _newOwner; 
     }
 

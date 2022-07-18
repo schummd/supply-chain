@@ -100,4 +100,12 @@ contract('Product', (accounts) => {
         assert.isTrue(verifyCert, "certificate issued by expected certifying authority");
     });
 
+    it('Owner updates product hash', async() => {
+        let newProductHash = web3.utils.sha3('I have updated the product quatity');
+        let productResponse = await productInstance.updateProduct(batchID, newProductHash, {from: producer})
+        await productInstance.getPastEvents().then((ev) => batchHash = ev[0].args[0]); 
+        assert.equal(batchHash, newProductHash, "product hash was not updated on chain correctly")
+    });
+
+
 })
