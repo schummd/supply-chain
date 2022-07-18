@@ -70,6 +70,13 @@ contract('Product', (accounts) => {
         assert.equal(checkProduct[2], producer, "check the owner is the same who transacted"); 
     }); 
 
+    it('Producer can only authorise CA in CA registry', async() => {
+        // this check was removed from contract, is this because we will check CA is authorised off chain?
+        CANotRegistered = await authorityKeys();
+        await truffleAssert.reverts(
+            productInstance.updateCertAuthorisation(batchID, CANotRegistered[0], {from: producer})), "this is not a registered authority"
+    }); 
+
     it('Producer authorises the CA to issue the certificate', async() => {
         await productInstance.updateCertAuthorisation(batchID, CA[0], { from: producer })
         let checkProduct = await productInstance.getProduct(batchID); 
@@ -191,6 +198,12 @@ contract('Product', (accounts) => {
             (productInstance.updateCertificate(batchID, certificate, signature, {from: producer})), "You no longer own this batch"
         );
     });
+
+    // Tests for multiple products on the supply chain
+
+    // owner of one product cannot update data of another product
+
+    // registered and selected CA cannot update data of another product
 
 
 })
