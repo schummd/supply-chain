@@ -15,9 +15,11 @@ contract('Product', (accounts) => {
     let batchID; 
     let authorityAddress; 
     let productHash = web3.utils.sha3('product');
-    let conditionsHash = web3.utils.sha3('conditions');
-    let rejectedProductHash = web3.utils.sha3('I am trying to tamper with product');
+    let reqConditionsHash = web3.utils.sha3('The required conditions are cold');
+    let incorrectProductHash = web3.utils.sha3('I am trying to tamper with product');
     let newProductHash = web3.utils.sha3('I have updated the product quatity');
+    let newConditionsHash = web3.utils.sha3('The required conditions are cold, dark')
+    let incorrectConditionsHash = web3.utils.sha3('The batch was stored outside in direct sunlight');
 
     const DOA = accounts[9];        // certification registry owner 
 	const owner = accounts[0];      // contract owner 
@@ -55,7 +57,7 @@ contract('Product', (accounts) => {
         // generate 2 random hashes for testing
 
         // add a product to the contract 
-        await productInstance.addProduct(productHash, conditionsHash, { from: producer })
+        await productInstance.addProduct(productHash, reqConditionsHash, { from: producer })
         await productInstance.getPastEvents().then((ev) => batchID = ev[0].args[0]); 
 
         // get the product infromation 
@@ -64,7 +66,7 @@ contract('Product', (accounts) => {
         
         // check if the data is correct 
         assert.equal(checkProduct[0], productHash, "check the supplied product hash is the same as stored"); 
-        assert.equal(checkProduct[1], conditionsHash, "check the supplied conditions hash is the same as stored"); 
+        assert.equal(checkProduct[1], reqConditionsHash, "check the supplied conditions hash is the same as stored"); 
         assert.equal(checkProduct[2], producer, "check the owner is the same who transacted"); 
     }); 
 
@@ -115,16 +117,36 @@ contract('Product', (accounts) => {
 
     it('Not owner, cannot update product', async() => {
         await truffleAssert.reverts(
-            (productInstance.updateProduct(batchID, rejectedProductHash, {from: badActor})), "Only authorised address can call this function"
-            );
+            (productInstance.updateProduct(batchID, incorrectProductHash, {from: badActor})), "Only authorised address can call this function"
+        );
     });
 
     it('Anyone can verify a product', async() => {
-        await productInstance.verifyProductHash(batchID, productHash);
+        let prodVerify = await productInstance.verifyProductHash(batchID, productHash);
+        assert.isTrue(prodVerify, 'The product could not be verified as expected', { from: thirdParty})
     });
 
+    it('Anyone can verify a product is tampered with', async() => {
+        let prodVerify = await productInstance.verifyProductHash(batchID, incorrectProductHash);
+        assert.isFalse(prodVerify, 'The product was verified when it should not have been', { from: thirdParty})
+    });
+    
+
     it('Anyone can verify a conditions', async() => {
-        await productInstance.verifyConditionsHash(batchID, conditionsHash);
+        // get a hash of off chain conitions
+        let actualConditionsHash = web3.utils.sha3('The required conditions are cold');
+        let condVerify = await productInstance.verifyConditionsHash(batchID, actualConditionsHash);
+        assert.isTrue(condVerify, 'The conditions could not be verified', { from: thirdParty})
+    });
+
+    it('Anyone can verify conditions are incorrect', async() => {
+        let condVerify = await productInstance.verifyConditionsHash(batchID, incorrectConditionsHash);
+        assert.isFalse(condVerify, 'The conditions were verified when they were incorrect', { from: thirdParty})
+    });
+
+    it('Anyone can verify a certificate', async() => {
+        let certVerify = await productInstance.verifyConditionsHash(batchID, reqConditionsHash);
+        assert.isTrue(certVerify, 'The certificate could not be verified', { from: thirdParty})
     });
 
 
