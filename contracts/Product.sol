@@ -109,9 +109,9 @@ contract Product {
         emit batchCertificate(_certificate, _signature);
     }
 
-    function updateOwner(bytes32 _batchID) public onlyThis(products[_batchID].owner) {
-        
-
+    function updateOwner(bytes32 _batchID, address _newOwner) public onlyThis(products[_batchID].owner) {
+        require(verifyCertificate(_batchID) == true); 
+        products[_batchID].owner = _newOwner; 
     }
 
     /* VERIFICATION FUNCTIONS ----------------------------------------------------------------- */
@@ -159,7 +159,7 @@ contract Product {
 
     // anyone can send a product ID and verify its certificate
     // should check if the certificate exists first, if not then false 
-    function verifyCertificate(bytes32 _batchID) external view returns(bool) {
+    function verifyCertificate(bytes32 _batchID) public view returns(bool) {
         bytes32 certificate = products[_batchID].certificate; 
         bytes memory signature = products[_batchID].signature; 
         // recovered issuer from the certificate and his signature 
