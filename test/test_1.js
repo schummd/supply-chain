@@ -24,7 +24,7 @@ contract('Product', (accounts) => {
     const DOA = accounts[9];        // certification registry owner 
 	const owner = accounts[0];      // contract owner 
 	const producer = accounts[1]; 
-    const newOwner1 = accounts[2];
+    const newOwner = accounts[2];
 	const newOwner2 = accounts[3]; 
     const badActor = accounts[4]; 
     const thirdParty = accounts[5]; 
@@ -112,7 +112,6 @@ contract('Product', (accounts) => {
         await productInstance.updateProduct(batchID, newProductHash, {from: producer})
         await productInstance.getPastEvents().then((ev) => batchHash = ev[0].args[0]); 
         assert.equal(batchHash, newProductHash, "product hash was not updated on chain correctly")
-        productHash = newProductHash
     });
 
     it('Not owner, cannot update product', async() => {
@@ -122,7 +121,7 @@ contract('Product', (accounts) => {
     });
 
     it('Anyone can verify a product', async() => {
-        let prodVerify = await productInstance.verifyProductHash(batchID, productHash);
+        let prodVerify = await productInstance.verifyProductHash(batchID, newProductHash);
         assert.isTrue(prodVerify, 'The product could not be verified as expected', { from: thirdParty})
     });
 
@@ -132,7 +131,7 @@ contract('Product', (accounts) => {
     });
     
 
-    it('Anyone can verify a conditions', async() => {
+    it('Anyone can verify conditions', async() => {
         // get a hash of off chain conitions - actual conditions
         let actualConditionsHash = web3.utils.sha3('The required conditions are cold');
         let condVerify = await productInstance.verifyConditionsHash(batchID, actualConditionsHash, { from: thirdParty});
@@ -145,13 +144,36 @@ contract('Product', (accounts) => {
     });
 
     it('Anyone can verify a certificate', async() => {
-        let certVerify = await productInstance.verifyConditionsHash(batchID, reqConditionsHash, { from: thirdParty});
+        let certVerify = await productInstance.verifyCertificate(batchID, { from: thirdParty});
         assert.isTrue(certVerify, 'The certificate could not be verified')
     });
 
     it('Only owner can update conditions', async() => {
         await truffleAssert.reverts(
             (productInstance.updateConditions(batchID, incorrectConditionsHash, {from: badActor})), "Only authorised address can call this function"
+        );
+    });
+
+    
+
+    it('Can only sell if product can be verified', async() => {
+        await productInstance.updateOwner(batchID, newOwner, reqConditionsHash, newProductHash, {from: producer})
+        let productDetails = await productInstance.getProduct(batchID);
+        assert.equal(productDetails[2], newOwner, "ownership was not correctly updated");
+    });
+
+    it('Old owner cannot update details anymore', async() => {
+        await truffleAssert.reverts(
+            (productInstance.updateConditions(batchID, newConditionsHash, {from: producer})), "Only authorised address can call this function"
+        );
+    });
+
+    it('producer cannot update certificate after selling', async() => {
+        let certData = await generateCertificate(batchID, CA[1]); 
+        let certificate = certData[0];
+        let signature = certData[1]; 
+        await truffleAssert.reverts(
+            (productInstance.updateCertificate(batchID, certificate, signature, {from: producer})), "You no longer own this batch"
         );
     });
 
