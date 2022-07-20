@@ -77,10 +77,10 @@ contract('Product', (accounts) => {
 
         // generate 2 random hashes for testing
         let productHash = web3.utils.sha3(retrieveData);
-        let conditionsHash = web3.utils.sha3('conditions');
+        // let conditionsHash = web3.utils.sha3('conditions');
 
         // add a product to the contract 
-        await productInstance.addProduct(productHash, conditionsHash, { from: producer })
+        await productInstance.addProduct(productHash, { from: producer })
         await productInstance.getPastEvents().then((ev) => batchID = ev[0].args[0]); 
 
         // get the product infromation 
@@ -89,26 +89,40 @@ contract('Product', (accounts) => {
         
         // check if the data is correct 
         assert.equal(checkProduct[0], productHash, "check the supplied product hash is the same as stored"); 
-        assert.equal(checkProduct[1], conditionsHash, "check the supplied conditions hash is the same as stored"); 
-        assert.equal(checkProduct[2], producer, "check the owner is the same who transacted"); 
+        // assert.equal(checkProduct[1], conditionsHash, "check the supplied conditions hash is the same as stored"); 
+        assert.equal(checkProduct[1], producer, "check the owner is the same who transacted"); 
     }); 
 
+    it('Adding database link to the product batch', async() => {
+        let stringCID = productCID.toString();
+        await productInstance.addDatabase(batchID, stringCID);
+        let getMapping = await productInstance.getDatabase.call(batchID); 
+        // console.log(getMapping); 
+        assert.equal(getMapping, stringCID, 'check the mapping of batch ID to database CID'); 
+    });
+
+    it('Getting the CID from on-chain and verifying it corresponds to product data', async() => {
+
+    }); 
 
     it('Adding certificate to the product', async() => {
         let certData = await generateCertificate(batchID, CA[1]); 
         let certificate = certData[0];
         let signature = certData[1]; 
-        let returnedCertificate; 
-        let returnedSignature; 
 
         // console.log(certificate);
         // console.log(signature); 
 
         await productInstance.updateCertificate(batchID, certificate, signature, { from: producer }); 
-        await productInstance.getPastEvents().then((ev) => returnedCertificate = ev[0].args[0]);
-        await productInstance.getPastEvents().then((ev) => returnedSignature = ev[0].args[1]);
+        // await productInstance.getPastEvents().then((ev) => returnedCertificate = ev[0].args[0]);
+        // await productInstance.getPastEvents().then((ev) => returnedSignature = ev[0].args[1]);
         // console.log(returnedCertificate);
         // console.log(returnedSignature); 
+        let response = await productInstance.getCertificate.call(batchID); 
+        let returnedCertificate = response[0];
+        let returnedSignature = response[1]; 
+
+        // console.log(returnedCertificate); 
 
         assert.equal(certificate, returnedCertificate, "check the certificated stored is the same"); 
         assert.equal(signature, returnedSignature, "check the signature stored is the same"); 
