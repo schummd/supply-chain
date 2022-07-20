@@ -6,7 +6,7 @@ const truffleAssert = require('truffle-assertions');
 const timeMachine = require('ganache-time-traveler');
 
 const { authorityKeys, generateSignature, generateCertificate } = require('../utilities/certificate.js'); 
-const { initGlobalIpfs, loadIpfs, getIpfs } = require('../database/storage'); 
+const { initGlobalIpfs, loadIpfs, getIpfs } = require('../utilities/storage'); 
 
 contract('Product', (accounts) => {
 
