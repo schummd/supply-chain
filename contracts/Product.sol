@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./CARegistry.sol"; 
-import "./OracleInterface.sol";
+import "./Oracle.sol";
 
 contract Product is TemperatureOracleClient{
 
