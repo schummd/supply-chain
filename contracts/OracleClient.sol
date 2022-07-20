@@ -4,14 +4,14 @@ pragma solidity ^0.8.0;
 
 import "./OracleInterface.sol";
 
-// /abstract client class for oracle client
-abstract contract OracleClient {
+
+//The abstract class for the temperature oracle client
+abstract contract TemperatureOracleClient {
     address _oracleAddress;
 
     constructor(address oracleAddress) {
         _oracleAddress = oracleAddress;
     } 
-
 
     // only the oracle should be able to update the data in the products contract
     modifier oracleOnly(){
@@ -19,32 +19,26 @@ abstract contract OracleClient {
         _;
     }
 
-    function requestDataFromOracle(bytes32 batchId, bytes memory data) internal  {
-        // request Data from oracle for the given data
-        OracleInterface(_oracleAddress).requestData(batchId, data);
-    }
-
-    function receiveDataFromOracle(bytes32 batchId, bytes memory data)
-    public
-    virtual;
-}
-
-//The abstract class for the temperature oracle client
-abstract contract TemperatureOracleClient is OracleClient {
-    constructor(address oracleAd) OracleClient(oracleAd) {}
-
     // function to request the temperature from the oracle temperature source
-    function requestTemperatureFromOracle(bytes32 batchId, uint256 temp) internal {
-        requestDataFromOracle(batchId, abi.encode(temp));
+    // call request temperature for the given batch Id
+    function requestTemperatureFromOracle(bytes32 batchId) internal 
+    {
+        // encode batch Id as data for the request
+        bytes memory data = abi.encode(batchId);
+        OracleInterface(_oracleAddress).requestData(data);
     }
 
-    function receiveDataFromOracle(bytes32 batchId, bytes memory data)
-    public override
+    // receive the data for the given request ID
+    function receiveDataFromOracle(bytes memory data)
+    public
     oracleOnly() {
-        (uint256 recvdTemp) = abi.decode(data, (uint256));
+        // convert bytes received into the received temperature and the 
+        // batchId the temperature was requested for
+        (uint256 recvdTemp, bytes32 batchId) = abi.decode(data, (uint256, bytes32));
         receiveTemperatureFromOracle(batchId, recvdTemp);
     }
 
+    // define what to do with the received temperature in the products contract
     function receiveTemperatureFromOracle (
         bytes32 batchId, uint256 recvdTemp)
         internal virtual;

@@ -48,15 +48,18 @@ contract Product is TemperatureOracleClient{
     // given batchId
     function getTemperature(bytes32 batchId) public 
     {
-        requestTemperatureFromOracle(batchId, _recvdTemp);
+        // send a request to the oracle for the temperature
+        requestTemperatureFromOracle(batchId);
+        // remember what oracle requests are associated with what batches
+
     }
 
-    function receiveTemperatureFromOracle(bytes32 batchId, uint256 recvdTemperature) internal override {
+    // receive the reply from the oracle
+    function receiveTemperatureFromOracle(bytes32 batchId, uint256 recvdTemp) internal override {
         // this will check received temp against required temp in products 
-        compareTemperature(batchId, recvdTemperature);
+        compareTemperature(batchId, recvdTemp);
+
     }
-
-
     /////////////////////////////////////////////////////////////
 
 
