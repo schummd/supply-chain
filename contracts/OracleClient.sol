@@ -24,17 +24,16 @@ abstract contract TemperatureOracleClient {
     function requestTemperatureFromOracle(bytes32 batchId) internal 
     {
         // encode batch Id as data for the request
-        bytes memory data = abi.encode(batchId);
-        OracleInterface(_oracleAddress).requestData(data);
+        OracleInterface(_oracleAddress).requestData(batchId);
     }
 
     // receive the data for the given request ID
-    function receiveDataFromOracle(bytes memory data)
+    function receiveDataFromOracle(bytes memory data, bytes32 batchId)
     public
     oracleOnly() {
         // convert bytes received into the received temperature and the 
         // batchId the temperature was requested for
-        (uint256 recvdTemp, bytes32 batchId) = abi.decode(data, (uint256, bytes32));
+        (uint256 recvdTemp) = abi.decode(data, (uint256));
         receiveTemperatureFromOracle(batchId, recvdTemp);
     }
 

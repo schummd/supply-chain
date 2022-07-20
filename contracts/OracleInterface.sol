@@ -5,7 +5,7 @@
 pragma solidity ^0.8.0;
 // contract that defines the interface to interact with oracle
 interface OracleInterface {
-    function requestData(bytes memory batchId) external;
+    function requestData(bytes32 batchId) external;
 }
 
 

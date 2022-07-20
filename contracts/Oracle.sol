@@ -1,11 +1,10 @@
 //SPDX-License-Identifier: UNLICENSED
  
 pragma solidity ^0.8.0;
-import "./OracleInterface.sol";
 import "./OracleClient.sol";
 // abstract class for oracle contract, which implements the oracle interface
 contract Oracle is OracleInterface {
-    event request(bytes batchId, address caller);
+    event request(bytes32 batchId, address caller);
 
     address public trustedServer;
 
@@ -21,12 +20,12 @@ contract Oracle is OracleInterface {
 
     // emit a request for temperature data for the given batchId for the 
     // listener to hear
-    function requestData(bytes memory batchId) public override {
+    function requestData(bytes32 batchId) public override {
         emit request(batchId , msg.sender);
     }
     
     // send the data from the oracle to the client
-    function replyTemp(bytes memory data, address caller) public virtual trusted(caller) {
-        TemperatureOracleClient(caller).receiveDataFromOracle(data);
+    function replyTemp(bytes32 batchId, bytes memory data, address caller) public virtual trusted(caller) {
+        TemperatureOracleClient(caller).receiveDataFromOracle(data, batchId);
     }
 }
