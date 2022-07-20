@@ -22,7 +22,6 @@ contract Product {
 
         bytes32 certificate; 
         bytes signature;                // created with web3.eth.sign(), bytes 
-        address authCA;                 // the CA authorised by producer to update certificate
 
         address owner;
         address producer;
@@ -44,18 +43,6 @@ contract Product {
 
     modifier onlyThis(address _address) { require(msg.sender == _address, "Only authorised address can call this function"); _; }
 
-    // only owner can call the function 
-    // modifier onlyOwner(address _owner) { require(msg.sender == _owner, "You are not the owner of this batch"); _; }
-    // only producer can call the function 
-    // modifier onlyProducer(address _producer) { require(msg.sender == _producer,"only a producer can request a certifying authority" ); _; }
-    
-    // only after that time can call the function 
-    // modifier onlyAfter(uint256 _time) { require(block.timestamp > _time); _; }
-    // only before that time can call the function 
-    // modifier onlyBefore(uint256 _time) { require(block.timestamp < _time); _;}
-    
-    // only authorised CA can add a certificate
-    modifier onlyAuthCA(address _CA) { require(msg.sender == _CA, "You do not have permission to modify this information"); _; }
     
     // lock against reentrancy 
     modifier lock() { 
@@ -69,7 +56,7 @@ contract Product {
 
     event batchCertificate(bytes32 certificate, bytes signature); 
 
-    event newOwner(address owner); 
+    event batchProduct(bytes32 productHash);
 
     /* PRODUCT FUNCTIONS ------------------------------------------------------------------ */
 
@@ -87,6 +74,7 @@ contract Product {
     // the owner can update the product hash
     function updateProduct(bytes32 _batchID, bytes32 _updatedData) public onlyThis(products[_batchID].owner) {
         products[_batchID].productHash = _updatedData;
+        emit batchProduct(_updatedData);
     }
 
     // the owner can send a new product contions hash
@@ -94,23 +82,18 @@ contract Product {
         products[_batchID].conditionsHash = _updatedConditions;
     }
 
-    // producer calls this function to select a CA of their choice 
-    // to add a certificate to their product
-    // the producer must still own the batch to request a certificate
-    function updateCertAuthorisation(bytes32 _batchID, address _requestedCA) public onlyThis(products[_batchID].producer) {
-        require(products[_batchID].owner == products[_batchID].producer); 
-        products[_batchID].authCA = _requestedCA;
-    }
-    
     // update certificate data in product - only authorised CA 
     function updateCertificate(bytes32 _batchID, bytes32 _certificate, bytes memory _signature) public onlyThis(products[_batchID].producer) {
+        require(products[_batchID].owner == products[_batchID].producer, "You no longer own this batch"); 
         products[_batchID].certificate = _certificate; 
         products[_batchID].signature = _signature; 
         emit batchCertificate(_certificate, _signature);
     }
 
-    function updateOwner(bytes32 _batchID, address _newOwner) public onlyThis(products[_batchID].owner) {
-        require(verifyCertificate(_batchID) == true); 
+    function updateOwner(bytes32 _batchID, address _newOwner, bytes32 _offchainConditions, bytes32 _offchainProduct) public onlyThis(products[_batchID].owner) {
+        require(verifyCertificate(_batchID) == true, "certificate could not be verified"); 
+        require (verifyConditionsHash(_batchID, _offchainConditions) == true, "product conditions could not be verified");
+        require (verifyProductHash(_batchID, _offchainProduct) == true, "product data could not be verified");
         products[_batchID].owner = _newOwner; 
     }
 
@@ -128,18 +111,10 @@ contract Product {
         return false;
     }
 
-    function verifyIssuerAuthorisation(bytes32 _batchID) public view returns (bool) {
-        bytes32 certificate = products[_batchID].certificate; 
-        bytes memory signature = products[_batchID].signature; 
-        address issuer = recoverIssuer(certificate, signature); 
-        if (products[_batchID].authCA == issuer) { return true; }
-        return false; 
-    }
-
     /* GETTER FUNCTIONS ----------------------------------------------------------------------- */
 
-    function getProduct(bytes32 _batchID) public view returns(bytes32, bytes32, address, address) {
-        return (products[_batchID].productHash, products[_batchID].conditionsHash, products[_batchID].owner, products[_batchID].authCA);
+    function getProduct(bytes32 _batchID) public view returns(bytes32, bytes32, address) {
+        return (products[_batchID].productHash, products[_batchID].conditionsHash, products[_batchID].owner);
     }
 
     /* TEMPERATURE FUNCTIONS ------------------------------------------------------------------ */

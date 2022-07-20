@@ -62,13 +62,6 @@ contract('Product', (accounts) => {
         assert.equal(checkProduct[2], producer, "check the owner is the same who transacted"); 
     }); 
 
-    it('Producer authorises the CA to issue the certificate', async() => {
-        await productInstance.updateCertAuthorisation(batchID, CA[0], { from: producer })
-        let checkProduct = await productInstance.getProduct(batchID); 
-        // console.log(CA[0]);
-        // console.log(checkProduct); 
-        assert.equal(checkProduct[3], CA[0], "check CA address was assigned to a batch");
-    }); 
 
     it('Adding certificate to the product', async() => {
         let certData = await generateCertificate(batchID, CA[1]); 
@@ -93,11 +86,6 @@ contract('Product', (accounts) => {
     it('Verify the certificate of the batch', async() => {
          let verification = await productInstance.verifyCertificate(batchID);
          assert.isTrue(verification, "batch certificate was signed by a valid authority"); 
-    });
-
-    it('Verify that certificate has been issued by requested CA', async() => {
-        let verifyCert = await productInstance.verifyIssuerAuthorisation.call(batchID); 
-        assert.isTrue(verifyCert, "certificate issued by expected certifying authority");
     });
 
 })
