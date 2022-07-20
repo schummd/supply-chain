@@ -2,8 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "./CARegistry.sol"; 
+import "./Oracle.sol";
 
-contract Product {
+contract Product is TemperatureOracleClient{
 
     bool internal locked;                   // lock for payments (not sure if necessary yet)
     address owner;
@@ -36,10 +37,27 @@ contract Product {
     // alternatively keep as array:
     // Product[] products; 
 
-    constructor(address _DOA, address _owner) {
+    constructor(address oracleAddress, address _DOA, address _owner) TemperatureOracleClient(oracleAddress) {
         DOA = _DOA; 
         owner = _owner; 
     }
+
+    ////////////////////////ORACLE //////////////////////////////
+    // function to request the temperature from the oracle for a 
+    // given batchId
+    function getTemperature(bytes32 batchId) public 
+    {
+        requestTemperatureFromOracle(batchId, _recvdTemp);
+    }
+
+    function receiveTemperatureFromOracle(bytes32 batchId, uint256 recvdTemperature) internal override {
+        // this will check received temp against required temp in products 
+        compareTemperature(batchID, recvdTemperature);
+    }
+
+
+    /////////////////////////////////////////////////////////////
+
 
     modifier onlyThis(address _address) { require(msg.sender == _address, "Only authorised address can call this function"); _; }
 
