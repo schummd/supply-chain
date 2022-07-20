@@ -53,11 +53,11 @@ abstract contract Oracle is OracleInterface {
     }
 }
 
-
 // The concrete class for the temperature oracle
 contract TemperatureOracle is Oracle {
     constructor(address tempSource) Oracle(tempSource) {}
 }
+
 
 //The abstract class for the temperature oracle client
 abstract contract TemperatureOracleClient is OracleClient {
