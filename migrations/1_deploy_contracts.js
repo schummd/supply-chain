@@ -1,7 +1,7 @@
 
 const Registry = artifacts.require("AuthorityRegistry");
 const Product = artifacts.require("Product"); 
-const TempOracle = artifacts.require("TemperatureOracle");
+const TempOracle = artifacts.require("TempOracle");
 
 module.exports = function(deployer, network, accounts) {
     
@@ -10,8 +10,8 @@ module.exports = function(deployer, network, accounts) {
 
     deployer.then(async() => {
         await deployer.deploy(Registry, DOA); // on a different network 
-        await deployer.deploy(TempOracle);
-        await deployer.deploy(TempOracle.address, Product, Registry.address, owner); 
+        await deployer.deploy(TempOracle, Registry.address);
+        await deployer.deploy(Product, TempOracle.address, Registry.address, owner); 
     });
 
     // deployer.deploy(Registry, DOA);
