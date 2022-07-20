@@ -62,7 +62,6 @@ contract TemperatureOracle is Oracle {
 //The abstract class for the temperature oracle client
 abstract contract TemperatureOracleClient is OracleClient {
     constructor(address oracleAd) OracleClient(oracleAd) {}
-ƒ
 
     // function to request the temperature from the oracle temperature source
     function requestTemperatureFromOracle(bytes32 batchId, uint256 temp) internal {

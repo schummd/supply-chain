@@ -30,6 +30,7 @@ contract Product is TemperatureOracleClient{
         uint256 reqTemperature;         // required temp of the product as provided in required conitions
         bool status;                    // the status of the product, true means ok - not sure if needed
     }
+    uint256 _recvdTemp;
 
     // maps each product ID to a product data   
     mapping (bytes32 => Batch) products; 
@@ -52,7 +53,7 @@ contract Product is TemperatureOracleClient{
 
     function receiveTemperatureFromOracle(bytes32 batchId, uint256 recvdTemperature) internal override {
         // this will check received temp against required temp in products 
-        compareTemperature(batchID, recvdTemperature);
+        compareTemperature(batchId, recvdTemperature);
     }
 
 
