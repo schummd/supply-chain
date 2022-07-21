@@ -6,7 +6,7 @@ import "./CARegistry.sol";
 contract Product {
 
     bool internal locked;               // lock for payments (not sure if necessary yet)
-    address owner;                      // owner of this contract (who deployed)
+    address payable owner;              // owner of this contract (who deployed)
     address DOA;                        // Department of Agriculture contract address 
 
     struct Batch {                      // keeps the hash of product data and conditions 
@@ -15,22 +15,26 @@ contract Product {
         bytes signature;                // created with web3.eth.sign(), bytes by issuer 
         address owner;                  // current owner of the product batch 
         address producer;               // who produced the batch 
-        uint256 reqTemperature;         // required temp of the product as provided in required conitions
+        uint256 temperature;            // required temp of the product as provided in required conitions
         bool status;                    // the status of the product, true means ok - not sure if needed
     }
 
     
     mapping (bytes32 => Batch) products;    // maps each product ID to a product data   
     mapping (bytes32 => string) database;   // maps batchID to IPFS storage link 
+    mapping (address => bool) producers;    // eligible producers to add products 
 
-    constructor(address _DOA, address _owner) {
+    constructor(address _DOA, address payable _owner) {
         DOA = _DOA; 
         owner = _owner; 
     }
 
-    // restricts functions only to specific caller
-    // product owner or product producer 
-    modifier onlyThis(address _address) { require(msg.sender == _address, "Only authorised address can call this function"); _; }
+    // check if the caller the current owner of the batch
+    modifier onlyOwner(address _address, bytes32 _batchID) { require(products[_batchID].owner == msg.sender, "only owner can call this function"); _; }
+    // check if the producer authorised to add products
+    modifier onlyProducer(address _address) { require(producers[_address] == true, "only authorised producer can call this function"); _; }
+    // check if the caller is the contract owner 
+    modifier onlyDeployer() { require(owner == msg.sender, "only contract owner can call this function"); _; }
     // lock against reentrancy 
     modifier lock() { 
         require(!locked); 
@@ -44,34 +48,46 @@ contract Product {
     /* PRODUCT FUNCTIONS ------------------------------------------------------------------ */
 
     /**
+     * @notice contract deployer adds authorised producer
+     *         to the mapping, which gives permissions to 
+     *         add products and certificate 
+     * @dev    only contract owner can call 
+     * @param  _producer batch producer address 
+    **/
+    function addProducer(address _producer) public onlyDeployer() {
+        producers[_producer] = true; 
+    }
+
+    /**
      * @notice add product infromation to the data hash
      *         and conditions hash generated from off-chain
-     * @dev    anyone can call function 
+     * @dev    only registered producer can call 
      * @param  _data product data hash 
+     * @param  _temperature stores required temperature
+     * @param  _CID unique identifier of the off-chain storage
     **/
-    function addProduct(bytes32 _data) public {
+    function addProduct(bytes32 _data, uint256 _temperature, string memory _CID) public onlyProducer(msg.sender) {
         bytes32 batchID = bytes32(keccak256(abi.encodePacked(_data))); 
         products[batchID].productHash = _data; 
         products[batchID].owner = msg.sender; 
         products[batchID].producer = msg.sender;
+        products[batchID].temperature = _temperature; 
         products[batchID].status = true;
+        database[batchID] = _CID; 
         emit batchIdentifier(batchID);
-    }
-
-    function addDatabase(bytes32 _batchID, string memory _CID) public {
-        database[_batchID] = _CID; 
     }
 
     /**
      * @notice producer adds a certificate obtained from the 
-     *         CA from off-chain 
+     *         CA from off-chain, the producer has to be the 
+     *         current batch owner to add certificate 
      * @dev    only the producer of the product can call 
      * @param  _batchID unique identifier of the batch 
      * @param  _certificate certificate certifying product batch
      * @param  _signature signature of the certificate issuer 
     **/
-    function updateCertificate(bytes32 _batchID, bytes32 _certificate, bytes memory _signature) public onlyThis(products[_batchID].producer) {
-        require(products[_batchID].owner == products[_batchID].producer, "producer is the current owner"); 
+    function addCertificate(bytes32 _batchID, bytes32 _certificate, bytes memory _signature) public onlyOwner(msg.sender, _batchID) {
+        require(products[_batchID].producer == products[_batchID].owner, "producer of the batch is not the owner"); 
         products[_batchID].certificate = _certificate; 
         products[_batchID].signature = _signature; 
     }
@@ -79,21 +95,20 @@ contract Product {
     /**
      * @notice transfer the ownership of the product batch, supported by 
      *         certificate verification and check of the product hash
-     *         that is stored on-chain and freshly computed one 
+     *         that is stored on-chain and freshly computed one
      * @dev    only the current owner of the product can call 
      * @param  _batchID unique identifier of the batch 
-     * @param  _newOwner certificate certifying product batch
-     * @param  _newHash newly computed hash of the off-chain data
+     * @param  _productHash hash of the product to verify
+     * @param  _newOwner address of a new batch owner 
     **/
-    function updateOwner(bytes32 _batchID, address _newOwner, bytes32 _newHash) public onlyThis(products[_batchID].owner) {
-        require(verifyCertificate(_batchID) == true, "certificate could not be verified"); 
-        require(verifyProductHash(_batchID, _newHash) == true, "product data could not be verified");
+    function updateOwner(bytes32 _batchID, bytes32 _productHash, address _newOwner) public onlyOwner(msg.sender, _batchID) {
+        require(verifyProductHash(_batchID, _productHash) == true, "product hash verification failed"); 
+        require(verifyCertificate(_batchID) == true, "certificate verification failed");
         products[_batchID].owner = _newOwner; 
     }
 
     /* VERIFICATION FUNCTIONS ----------------------------------------------------------------- */
 
-    // allow anyone to verify data in the off chain data store about product
     /**
      * @notice allows to verify data in the off-chain data store about product
      * @dev    anyone can call 
@@ -108,6 +123,17 @@ contract Product {
     }
 
     /* GETTER FUNCTIONS ----------------------------------------------------------------------- */
+
+    /**
+     * @notice checks whether the producer address is
+     *         authorised to add product and certificate
+     * @dev    anyone can call function 
+     * @param  _producer batch producer address 
+     * @return bool true if address is in mapping 
+    **/
+    function getProducer(address _producer) public view returns(bool) {
+        return producers[_producer]; 
+    }
 
     /**
      * @notice get the product hash and owner by its unique ID
@@ -131,6 +157,12 @@ contract Product {
         return (products[_batchID].certificate, products[_batchID].signature); 
     }
 
+    /**
+     * @notice get the product off-chain storage location 
+     * @dev    anyone can call function 
+     * @param  _batchID unique batch ID to get the product 
+     * @return string unique IPFS storage identifier (CID)
+    **/
     function getDatabase(bytes32 _batchID) public view returns(string memory) {
         return database[_batchID]; 
     }
@@ -141,7 +173,7 @@ contract Product {
     // have restricted to private so anyone cannot call this 
     // is there a way to resctrict this to the oracle?
     function compareTemperature(bytes32 _batchID, uint256 _temperature) private returns (bool) {
-        if (_temperature != products[_batchID].reqTemperature) {
+        if (_temperature != products[_batchID].temperature) {
             products[_batchID].status = false;
             return false;
         }
@@ -205,6 +237,16 @@ contract Product {
         // If the version is correct return the signer address
         if (v != 27 && v != 28) { return (address(0)); } 
         else { return ecrecover(_hash, v, r, s); }
+    }
+
+    /* UTILITIES FUNCTIONS -------------------------------------------------------------------- */
+
+    /**
+     * @notice deactivate contract 
+     * @dev    only the contract owner / deployer can call
+    **/
+    function destroyContract() public onlyDeployer() {
+        selfdestruct(owner); 
     }
 
 }

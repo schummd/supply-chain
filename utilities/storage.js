@@ -2,11 +2,22 @@
 
 var node; 
 
+/**
+ * Create a new IPFS node for each supply chain app user; 
+ * for testing storing and reading files are done from 
+ * the same node 
+ */
 async function initGlobalIpfs() {
     const { create } = await import('ipfs'); 
     node = await create(); 
 };
 
+
+/**
+ * Sends the data to the IPFS storage and returns unique identifier 
+ * @param  {object} _data added by the producer though front-end 
+ * @return {object} unique identifier of the data in IPFS storage 
+ */
 async function loadIpfs(_data) {
     const data = JSON.stringify(_data); 
     // load the data to IPFS storage 
@@ -18,9 +29,15 @@ async function loadIpfs(_data) {
     return cid; 
 }
 
-async function getIpfs(CID) {
+
+/**
+ * Queries data from the IPFS using unique identifier CID
+ * @param  {string} _CID unique identifier of the data stored 
+ * @return {string} recovered data from the storage as string
+ */
+async function getIpfs(_CID) {
     // retrieve data from storage using identifier 
-    const stream = await node.cat(CID); 
+    const stream = await node.cat(_CID); 
     const decoder = new TextDecoder(); 
     let retrieved = ''; 
 
@@ -30,5 +47,6 @@ async function getIpfs(CID) {
     
     return retrieved; 
 }
+
 
 module.exports = { initGlobalIpfs, loadIpfs, getIpfs }
