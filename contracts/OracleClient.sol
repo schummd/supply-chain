@@ -15,7 +15,7 @@ abstract contract TemperatureOracleClient {
 
     // only the oracle should be able to update the data in the products contract
     modifier oracleOnly(){
-        require(msg.sender == _oracleAddress);
+        require(msg.sender == _oracleAddress, 'data must come from the oracle contract');
         _;
     }
 
@@ -28,13 +28,12 @@ abstract contract TemperatureOracleClient {
     }
 
     // receive the data for the given request ID
-    function receiveDataFromOracle(bytes memory data, bytes32 batchId)
+    function receiveDataFromOracle(uint256 data, bytes32 batchId)
     public
     oracleOnly() {
         // convert bytes received into the received temperature and the 
         // batchId the temperature was requested for
-        (uint256 recvdTemp) = abi.decode(data, (uint256));
-        receiveTemperatureFromOracle(batchId, recvdTemp);
+        receiveTemperatureFromOracle(batchId, data);
     }
 
     // define what to do with the received temperature in the products contract

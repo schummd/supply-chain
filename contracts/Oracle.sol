@@ -11,7 +11,7 @@ contract Oracle is OracleInterface {
     // only get temperature from declared source
     modifier trusted(address serverAddr) {
         
-        require(serverAddr == trustedServer); _;
+        require(serverAddr == trustedServer, 'data must come from the trusted source'); _;
     }
 
     constructor(address serverAddr) {
@@ -25,7 +25,7 @@ contract Oracle is OracleInterface {
     }
     
     // send the data from the oracle to the client
-    function replyTemp(bytes32 batchId, bytes memory data, address caller) public virtual trusted(caller) {
+    function replyTemp(bytes32 batchId, uint256 data, address caller) public virtual trusted(msg.sender) {
         TemperatureOracleClient(caller).receiveDataFromOracle(data, batchId);
     }
 }

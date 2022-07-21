@@ -80,6 +80,8 @@ contract Product is TemperatureOracleClient{
 
     event batchProduct(bytes32 productHash);
 
+    event temperatureComparison(bool);
+
     /* PRODUCT FUNCTIONS ------------------------------------------------------------------ */
 
     // adds product data hash and conditions hash 
@@ -97,6 +99,11 @@ contract Product is TemperatureOracleClient{
     function updateProduct(bytes32 _batchID, bytes32 _updatedData) public onlyThis(products[_batchID].owner) {
         products[_batchID].productHash = _updatedData;
         emit batchProduct(_updatedData);
+    }
+
+        // the owner can send a new product contions hash
+    function addRequiredTemp(bytes32 _batchID, uint256 requiredTemp) public onlyThis(products[_batchID].owner) {
+        products[_batchID].reqTemperature = requiredTemp;
     }
 
     // the owner can send a new product contions hash
@@ -144,12 +151,12 @@ contract Product is TemperatureOracleClient{
     // requires oracle 
     // have restricted to private so anyone cannot call this 
     // is there a way to resctrict this to the oracle?
-    function compareTemperature(bytes32 _batchID, uint256 _temperature) private returns (bool) {
+    function compareTemperature(bytes32 _batchID, uint256 _temperature) private {
         if (_temperature != products[_batchID].reqTemperature) {
             products[_batchID].status = false;
-            return false;
+            emit temperatureComparison(false);
         }
-        return true;
+        emit temperatureComparison(true);
     }
 
     /* CERTIFICATE FUNCTIONS ------------------------------------------------------------------ */
