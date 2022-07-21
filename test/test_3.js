@@ -63,12 +63,17 @@ contract('Product', (accounts) => {
         assert.equal(checkProduct[1], conditionsHash, "check the supplied conditions hash is the same as stored"); 
         assert.equal(checkProduct[2], producer, "check the owner is the same who transacted"); 
 
-        await productInstance.addRequiredTemp(batchID, 18, {from: producer});
+        await productInstance.addRequiredTemp(batchID, 5, {from: producer});
     }); 
 
     it('Sending data through oracle', async () => {
-        let res = await oracleInstance.replyTemp.call(batchID, 17,productInstance.address, {from: oracleOwner});
+        let res = await oracleInstance.replyTemp.call(batchID, 4,productInstance.address, {from: oracleOwner});
         assert.isTrue(res);
+    });
+
+    it('Sending data through oracle, temp too high', async () => {
+        let res = await oracleInstance.replyTemp.call(batchID, 6,productInstance.address, {from: oracleOwner});
+        assert.isFalse(res);
     });
 
     
