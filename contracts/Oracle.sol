@@ -25,7 +25,7 @@ contract Oracle is OracleInterface {
     }
     
     // send the data from the oracle to the client
-    function replyTemp(bytes32 batchId, uint256 data, address caller) public virtual trusted(msg.sender) {
-        TemperatureOracleClient(caller).receiveDataFromOracle(data, batchId);
+    function replyTemp(bytes32 batchId, uint256 data, address caller) public virtual trusted(msg.sender) returns (bool){
+        return TemperatureOracleClient(caller).receiveDataFromOracle(data, batchId);
     }
 }

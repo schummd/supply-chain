@@ -55,9 +55,9 @@ contract Product is TemperatureOracleClient{
     }
 
     // receive the reply from the oracle
-    function receiveTemperatureFromOracle(bytes32 batchId, uint256 recvdTemp) internal override {
+    function receiveTemperatureFromOracle(bytes32 batchId, uint256 recvdTemp) internal override returns (bool) {
         // this will check received temp against required temp in products 
-        compareTemperature(batchId, recvdTemp);
+        return compareTemperature(batchId, recvdTemp);
 
     }
     /////////////////////////////////////////////////////////////
@@ -79,8 +79,6 @@ contract Product is TemperatureOracleClient{
     event batchCertificate(bytes32 certificate, bytes signature); 
 
     event batchProduct(bytes32 productHash);
-
-    event temperatureComparison(bool);
 
     /* PRODUCT FUNCTIONS ------------------------------------------------------------------ */
 
@@ -151,12 +149,13 @@ contract Product is TemperatureOracleClient{
     // requires oracle 
     // have restricted to private so anyone cannot call this 
     // is there a way to resctrict this to the oracle?
-    function compareTemperature(bytes32 _batchID, uint256 _temperature) private {
-        if (_temperature != products[_batchID].reqTemperature) {
+    function compareTemperature(bytes32 _batchID, uint256 _temperature) private 
+    returns (bool){
+        if (_temperature > products[_batchID].reqTemperature) {
             products[_batchID].status = false;
-            emit temperatureComparison(false);
+            return false;
         }
-        emit temperatureComparison(true);
+        return true;
     }
 
     /* CERTIFICATE FUNCTIONS ------------------------------------------------------------------ */

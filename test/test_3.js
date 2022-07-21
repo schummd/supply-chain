@@ -67,10 +67,8 @@ contract('Product', (accounts) => {
     }); 
 
     it('Sending data through oracle', async () => {
-        let res;
-        await oracleInstance.replyTemp(batchID, 17,productInstance.address, {from: oracleOwner});
-        await oracleInstance.getPastEvents().then((ev) => res = ev[0]); 
-        console.log(res);
+        let res = await oracleInstance.replyTemp.call(batchID, 17,productInstance.address, {from: oracleOwner});
+        assert.isTrue(res);
     });
 
     

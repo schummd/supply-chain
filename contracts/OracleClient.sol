@@ -29,15 +29,14 @@ abstract contract TemperatureOracleClient {
 
     // receive the data for the given request ID
     function receiveDataFromOracle(uint256 data, bytes32 batchId)
-    public
-    oracleOnly() {
+    oracleOnly() public returns (bool) {
         // convert bytes received into the received temperature and the 
         // batchId the temperature was requested for
-        receiveTemperatureFromOracle(batchId, data);
+        return receiveTemperatureFromOracle(batchId, data);
     }
 
     // define what to do with the received temperature in the products contract
     function receiveTemperatureFromOracle (
         bytes32 batchId, uint256 recvdTemp)
-        internal virtual;
+        internal virtual returns (bool);
 }
