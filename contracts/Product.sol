@@ -5,7 +5,7 @@ import "./CARegistry.sol";
 import "./OracleClient.sol";
 
 contract Product is TemperatureOracleClient{
-
+    bool internal halted = false;
     bool internal locked;                   // lock for payments (not sure if necessary yet)
     address owner;
     // address CA;
@@ -65,6 +65,9 @@ contract Product is TemperatureOracleClient{
 
     modifier onlyThis(address _address) { require(msg.sender == _address, "Only authorised address can call this function"); _; }
 
+    modifier notHalted () {require(halted == false, 'The contract has been halted'); _;}
+
+    modifier isHalted () {require(halted == true, 'The contract is not halted'); _;}
     
     // lock against reentrancy 
     modifier lock() { 
@@ -83,7 +86,8 @@ contract Product is TemperatureOracleClient{
     /* PRODUCT FUNCTIONS ------------------------------------------------------------------ */
 
     // adds product data hash and conditions hash 
-    function addProduct(bytes32 _data, bytes32 _conditions) public {
+    function addProduct(bytes32 _data, bytes32 _conditions) public
+        notHalted() {
         bytes32 batchID = bytes32(keccak256(abi.encodePacked(_data, _conditions))); 
         products[batchID].productHash = _data; 
         products[batchID].conditionsHash = _conditions; 
@@ -94,30 +98,41 @@ contract Product is TemperatureOracleClient{
     }
 
     // the owner can update the product hash
-    function updateProduct(bytes32 _batchID, bytes32 _updatedData) public onlyThis(products[_batchID].owner) {
+    function updateProduct(bytes32 _batchID, bytes32 _updatedData) public 
+    notHalted()
+    onlyThis(products[_batchID].owner) {
         products[_batchID].productHash = _updatedData;
         emit batchProduct(_updatedData);
     }
 
         // the owner can send a new product contions hash
-    function addRequiredTemp(bytes32 _batchID, uint256 requiredTemp) public onlyThis(products[_batchID].owner) {
+    function addRequiredTemp(bytes32 _batchID, uint256 requiredTemp) public 
+    notHalted()
+    onlyThis(products[_batchID].owner) {
         products[_batchID].reqTemperature = requiredTemp;
     }
 
     // the owner can send a new product contions hash
-    function updateConditions(bytes32 _batchID, bytes32 _updatedConditions) public onlyThis(products[_batchID].owner) {
+    function updateConditions(bytes32 _batchID, bytes32 _updatedConditions) 
+    public
+    notHalted()
+    onlyThis(products[_batchID].owner) {
         products[_batchID].conditionsHash = _updatedConditions;
     }
 
     // update certificate data in product - only authorised CA 
-    function updateCertificate(bytes32 _batchID, bytes32 _certificate, bytes memory _signature) public onlyThis(products[_batchID].producer) {
+    function updateCertificate(bytes32 _batchID, bytes32 _certificate, bytes memory _signature) public 
+    notHalted()
+    onlyThis(products[_batchID].producer) {
         require(products[_batchID].owner == products[_batchID].producer, "You no longer own this batch"); 
         products[_batchID].certificate = _certificate; 
         products[_batchID].signature = _signature; 
         emit batchCertificate(_certificate, _signature);
     }
 
-    function updateOwner(bytes32 _batchID, address _newOwner, bytes32 _offchainConditions, bytes32 _offchainProduct) public onlyThis(products[_batchID].owner) {
+    function updateOwner(bytes32 _batchID, address _newOwner, bytes32 _offchainConditions, bytes32 _offchainProduct) public 
+    notHalted()
+    onlyThis(products[_batchID].owner) {
         require(verifyCertificate(_batchID) == true, "certificate could not be verified"); 
         require (verifyConditionsHash(_batchID, _offchainConditions) == true, "product conditions could not be verified");
         require (verifyProductHash(_batchID, _offchainProduct) == true, "product data could not be verified");
@@ -150,12 +165,38 @@ contract Product is TemperatureOracleClient{
     // have restricted to private so anyone cannot call this 
     // is there a way to resctrict this to the oracle?
     function compareTemperature(bytes32 _batchID, uint256 _temperature) private 
-    returns (bool){
+    notHalted()
+    returns (bool)
+    {
         if (_temperature > products[_batchID].reqTemperature) {
             products[_batchID].status = false;
             return false;
         }
         return true;
+    }
+
+
+    // allow owner to reset product status in the event of oracle malfunction
+    // they must provide an alternative temperature reading
+    function updateStatus(bytes32 _batchID, uint256 _temperature) public
+    notHalted()
+    onlyThis(products[_batchID].owner)
+    {
+        compareTemperature(_batchID, _temperature);
+    }
+
+    // following can only be executed by contract owner
+    function emergencyHalt()
+    notHalted()
+    public 
+    {
+        halted = true;
+    }
+
+    function restartContract() public
+    isHalted()
+    {
+        halted = false;
     }
 
     /* CERTIFICATE FUNCTIONS ------------------------------------------------------------------ */

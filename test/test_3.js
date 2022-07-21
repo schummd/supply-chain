@@ -76,6 +76,9 @@ contract('Product', (accounts) => {
         assert.isFalse(res);
     });
 
-    
+    it('Requesting data through oracle', async () => {
+        let res = await productInstance.getTemp(batchID);
+        assert.isTrue(res);
+    });
 
 })
