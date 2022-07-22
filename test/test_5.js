@@ -1,6 +1,9 @@
 const Product = artifacts.require("Product");
 const Registry = artifacts.require("AuthorityRegistry");
 const Oracle = artifacts.require("Oracle");
+const axios = require('axios');
+
+
 
 const assert = require("chai").assert;
 const truffleAssert = require('truffle-assertions');
@@ -41,13 +44,32 @@ contract('Product', (accounts) => {
             // if(error) { console.error(error); }
             if(error) {console.log(error)}
             assert.equal(result.args[1], productInstance.address)
-            console.log("received request"); 
+            //console.log("received request"); 
             // console.log(result.args.batchID); 
-            console.log(result.args)
+            //console.log(result.args)
             // make sure sending back to the right place
+            // async() => {
+            //    temperature = await replyTemperature();
+            // }
             oracleInstance.replyTemp(result.args[0], 6, result.args[1], {from: oracleOwner});
+            // force to wait for compare temperature event to emit
         })
     });
+
+    // async function replyTemperature() {
+    //     let temperature = await axios.get(`https://goweather.herokuapp.com/weather/Sydney`)
+    //     .then(response => {
+    //         return response?.data?.temperature?.replace(/[^0-9-\.]/g, "");
+    //     })
+    //     .catch(error =>  {
+    //         console.log(error);
+    //     });
+
+    //     if (!parseInt(temperature)) {
+    //         console.log("invalid temperature");
+    //         return;
+    //     }
+    // };
 
 
 
@@ -104,7 +126,7 @@ contract('Product', (accounts) => {
             "description": "apples",
             "saleContract": "#4513404285"
         }
-        console.log(); 
+        //console.log(); 
         // initiate a global node for user 
         await initGlobalIpfs(); 
         // store data of the product and get the CID
@@ -181,11 +203,47 @@ contract('Product', (accounts) => {
 
         // let res = await oracleInstance.replyTemp(recvBatchID, 6, caller, {from: oracleOwner});
 
-        // stall tests
-         await getIpfs(productCID); 
+        // stall tests 
+        await getIpfs(productCID); 
 
         let status = await productInstance.getProduct(batchID);
         assert.equal(status[2], false);
+        // console.log(result); 
+        
+        // console.log(status); 
+        
+
+        // let response = await oracleInstance.replyTemp(batchID, 10, productInstance.address, { from: oracle });
+        // console.log(response); // returned true
+        // let status = await productInstance.getProduct(batchID);
+        // assert.equal(status[2], false);
+        
+        // status = await productInstance.getStatus.call(batchID, { from: producer }); 
+        // console.log(status); 
+
+        // let temp = await productInstance.checkTemp({ from: producer }); 
+        // console.log(temp); 
+    });
+
+
+
+    it('Oracle pushing data to products', async() => {
+        let result = await productInstance.getTemperature(batchID, { from: producer });
+        for (i = 0; i < 10; i++) {
+            let sendTemp = await oracleInstance.replyTemp(batchID, 6, productInstance.address, {from: oracleOwner});
+            let status = await productInstance.getProduct(batchID);
+            assert.equal(status[2], false);
+        }
+        // await oracleInstance.getPastEvents().then((ev) => caughtEvent = ev[0]); 
+        // let recvBatchID = caughtEvent.args[0];
+        // let caller = caughtEvent.args[1];
+        // assert.equal(caller, productInstance.address); // assert caller is product contract
+        // console.log('event received');
+        // console.log(recvBatchID, caller);
+
+        // let res = await oracleInstance.replyTemp(recvBatchID, 6, caller, {from: oracleOwner});
+
+        // stall tests 
         // console.log(result); 
         
         // console.log(status); 
