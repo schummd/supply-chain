@@ -18,8 +18,6 @@ contract('Product', (accounts) => {
 
     let productInfo;                    // producer's product data 
     let productCID;                     // keeps the ID of the product in IPFS
-    let newProductHash;                 // newly computed hash of the product 
-
     const DOA = accounts[9];            // certification registry owner 
 	const owner = accounts[0];          // contract owner 
 	const producer = accounts[1];       // batch producer
@@ -47,11 +45,9 @@ contract('Product', (accounts) => {
             // console.log(result.args.batchID); 
             console.log(result.args)
             // make sure sending back to the right place
-            async() => {
-                await oracleInstance.replyTemp(result.args[0], 6, result.args[1], {from: oracleOwner});
-            }
+            oracleInstance.replyTemp(result.args[0], 6, result.args[1], {from: oracleOwner});
         })
-        });
+    });
 
 
 
@@ -129,6 +125,7 @@ contract('Product', (accounts) => {
         // retrieve data from the file storage 
         let retrieveData = await getIpfs(productCID); 
         // generate hash of the data 
+        let newProductHash;                 // newly computed hash of the product 
         let productHash = web3.utils.sha3(retrieveData);
         let temperature = 5; 
         let stringCID = productCID.toString();
@@ -183,6 +180,9 @@ contract('Product', (accounts) => {
         // console.log(recvBatchID, caller);
 
         // let res = await oracleInstance.replyTemp(recvBatchID, 6, caller, {from: oracleOwner});
+
+        // stall tests
+         await getIpfs(productCID); 
 
         let status = await productInstance.getProduct(batchID);
         assert.equal(status[2], false);
