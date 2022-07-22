@@ -32,5 +32,5 @@ abstract contract TemperatureOracleClient {
     }
 
     // define what to do with the received temperature in the products contract
-    function receiveTemperatureFromOracle (bytes32 batchId, uint256 recvdTemp) internal virtual returns (bool);
+    function receiveTemperatureFromOracle(bytes32 batchId, uint256 recvdTemp) internal virtual returns (bool);
 }
