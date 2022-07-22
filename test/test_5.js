@@ -51,6 +51,12 @@ contract('Product', (accounts) => {
             // async() => {
             //    temperature = await replyTemperature();
             // }
+            let temperature;
+            async() => {
+                temperature = await replyTemperature();
+            }
+            console.log('oracle found:')
+            console.log(temperature);
             oracleInstance.replyTemp(result.args[0], 6, result.args[1], {from: oracleOwner});
             // force to wait for compare temperature event to emit
         })
