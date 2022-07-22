@@ -232,7 +232,6 @@ contract('Product', (accounts) => {
 
 
     it('Oracle pushing data to products', async() => {
-        let result = await productInstance.getTemperature(batchID, { from: producer });
         for (i = 0; i < 10; i++) {
             let temp = await replyTemperature();
             console.log(temp);
