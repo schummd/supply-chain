@@ -2,9 +2,10 @@
 pragma solidity ^0.8.0;
 
 import "./CARegistry.sol"; 
+import "./OracleClient.sol";
 
-contract Product {
-
+contract Product is TemperatureOracleClient {
+    bool internal halted;
     bool internal locked;               // lock for payments (not sure if necessary yet)
     address payable owner;              // owner of this contract (who deployed)
     address DOA;                        // Department of Agriculture contract address 
@@ -18,17 +19,44 @@ contract Product {
         uint256 temperature;            // required temp of the product as provided in required conitions
         bool status;                    // the status of the product, true means ok - not sure if needed
     }
+    uint256 _recvdTemp;
 
     
     mapping (bytes32 => Batch) products;    // maps each product ID to a product data   
     mapping (bytes32 => string) database;   // maps batchID to IPFS storage link 
     mapping (address => bool) producers;    // eligible producers to add products 
 
-    constructor(address _DOA, address payable _owner) {
+    constructor(address oracleAddress, address _DOA, address payable _owner) TemperatureOracleClient(oracleAddress) {
         DOA = _DOA; 
         owner = _owner; 
     }
 
+    ////////////////////////ORACLE //////////////////////////////
+    // function to request the temperature from the oracle for a 
+    // given batchId
+    function getTemperature(bytes32 batchId) public 
+    {
+        // send a request to the oracle for the temperature
+        requestTemperatureFromOracle(batchId);
+        // remember what oracle requests are associated with what batches
+
+    }
+
+    // receive the reply from the oracle
+    function receiveTemperatureFromOracle(bytes32 batchId, uint256 recvdTemp) internal override returns (bool) {
+        // this will check received temp against required temp in products 
+        return compareTemperature(batchId, recvdTemp);
+
+    }
+    /////////////////////////////////////////////////////////////
+
+
+    modifier onlyThis(address _address) { require(msg.sender == _address, "Only authorised address can call this function"); _; }
+
+    modifier notHalted () {require(halted == false, 'The contract has been halted'); _;}
+
+    modifier isHalted () {require(halted == true, 'The contract is not halted'); _;}
+    
     // check if the caller the current owner of the batch
     modifier onlyOwner(address _address, bytes32 _batchID) { require(products[_batchID].owner == msg.sender, "only owner can call this function"); _; }
     // check if the producer authorised to add products
@@ -54,7 +82,9 @@ contract Product {
      * @dev    only contract owner can call 
      * @param  _producer batch producer address 
     **/
-    function addProducer(address _producer) public onlyDeployer() {
+    function addProducer(address _producer) public 
+    notHalted()
+    onlyDeployer() {
         producers[_producer] = true; 
     }
 
@@ -66,7 +96,9 @@ contract Product {
      * @param  _temperature stores required temperature
      * @param  _CID unique identifier of the off-chain storage
     **/
-    function addProduct(bytes32 _data, uint256 _temperature, string memory _CID) public onlyProducer(msg.sender) {
+    function addProduct(bytes32 _data, uint256 _temperature, string memory _CID) public 
+    notHalted()
+    onlyProducer(msg.sender) {
         bytes32 batchID = bytes32(keccak256(abi.encodePacked(_data))); 
         products[batchID].productHash = _data; 
         products[batchID].owner = msg.sender; 
@@ -86,7 +118,9 @@ contract Product {
      * @param  _certificate certificate certifying product batch
      * @param  _signature signature of the certificate issuer 
     **/
-    function addCertificate(bytes32 _batchID, bytes32 _certificate, bytes memory _signature) public onlyOwner(msg.sender, _batchID) {
+    function addCertificate(bytes32 _batchID, bytes32 _certificate, bytes memory _signature) public 
+    notHalted()
+    onlyOwner(msg.sender, _batchID) {
         require(products[_batchID].producer == products[_batchID].owner, "producer of the batch is not the owner"); 
         products[_batchID].certificate = _certificate; 
         products[_batchID].signature = _signature; 
@@ -101,7 +135,9 @@ contract Product {
      * @param  _productHash hash of the product to verify
      * @param  _newOwner address of a new batch owner 
     **/
-    function updateOwner(bytes32 _batchID, bytes32 _productHash, address _newOwner) public onlyOwner(msg.sender, _batchID) {
+    function updateOwner(bytes32 _batchID, bytes32 _productHash, address _newOwner) public
+    notHalted()
+    onlyOwner(msg.sender, _batchID) {
         require(verifyProductHash(_batchID, _productHash) == true, "product hash verification failed"); 
         require(verifyCertificate(_batchID) == true, "certificate verification failed");
         products[_batchID].owner = _newOwner; 
@@ -117,7 +153,9 @@ contract Product {
      * @return bool if the hash stored on-chain is the same as newly computed hash,
      *         then product infromation is correct and has not been modified 
     **/
-    function verifyProductHash(bytes32 _batchID, bytes32 _offchainHash) public view returns (bool) {
+    function verifyProductHash(bytes32 _batchID, bytes32 _offchainHash) public 
+    notHalted()
+    view returns (bool) {
         if (products[_batchID].productHash == _offchainHash) { return true;}
         return false;
     }
@@ -131,7 +169,9 @@ contract Product {
      * @param  _producer batch producer address 
      * @return bool true if address is in mapping 
     **/
-    function getProducer(address _producer) public view returns(bool) {
+    function getProducer(address _producer) public view 
+    notHalted()
+    returns(bool) {
         return producers[_producer]; 
     }
 
@@ -142,7 +182,9 @@ contract Product {
      * @return bytes32 product hash stored on-chain 
      * @return address of the current owner of the batch 
     **/
-    function getProduct(bytes32 _batchID) public view returns(bytes32, address) {
+    function getProduct(bytes32 _batchID) public view 
+    notHalted()
+    returns(bytes32, address) {
         return (products[_batchID].productHash, products[_batchID].owner);
     }
 
@@ -153,7 +195,9 @@ contract Product {
      * @return bytes32 batch certificate on-chain
      * @return bytes array of the issuer signature
     **/
-    function getCertificate(bytes32 _batchID) public view returns(bytes32, bytes memory) {
+    function getCertificate(bytes32 _batchID) public view 
+    notHalted()
+    returns(bytes32, bytes memory) {
         return (products[_batchID].certificate, products[_batchID].signature); 
     }
 
@@ -163,7 +207,9 @@ contract Product {
      * @param  _batchID unique batch ID to get the product 
      * @return string unique IPFS storage identifier (CID)
     **/
-    function getDatabase(bytes32 _batchID) public view returns(string memory) {
+    function getDatabase(bytes32 _batchID) public view 
+    notHalted()
+    returns(string memory) {
         return database[_batchID]; 
     }
 
@@ -172,12 +218,41 @@ contract Product {
     // requires oracle 
     // have restricted to private so anyone cannot call this 
     // is there a way to resctrict this to the oracle?
-    function compareTemperature(bytes32 _batchID, uint256 _temperature) private returns (bool) {
-        if (_temperature != products[_batchID].temperature) {
+    function compareTemperature(bytes32 _batchID, uint256 _temperature) private 
+    notHalted()
+    returns (bool)
+    {
+        if (_temperature > products[_batchID].temperature) {
             products[_batchID].status = false;
             return false;
         }
         return true;
+    }
+
+
+    // allow owner to reset product status in the event of oracle malfunction
+    // they must provide an alternative temperature reading
+    function updateStatus(bytes32 _batchID, uint256 _temperature) public
+    notHalted()
+    onlyThis(products[_batchID].owner)
+    {
+        compareTemperature(_batchID, _temperature);
+    }
+
+    // following can only be executed by contract owner
+    function emergencyHalt()
+    onlyDeployer()
+    notHalted()
+    public 
+    {
+        halted = true;
+    }
+
+    function restartContract() public
+    onlyDeployer()
+    isHalted()
+    {
+        halted = false;
     }
 
     /* CERTIFICATE FUNCTIONS ------------------------------------------------------------------ */
@@ -191,7 +266,9 @@ contract Product {
      * @return bool if the issuer is registered with DOA, then 
      *         certificate is valid, otherwise returns false 
     **/
-    function verifyCertificate(bytes32 _batchID) public view returns(bool) {
+    function verifyCertificate(bytes32 _batchID) public view
+    notHalted()
+    returns(bool) {
         bytes32 certificate = products[_batchID].certificate; 
         bytes memory signature = products[_batchID].signature; 
         // recovered issuer from the certificate and his signature 
