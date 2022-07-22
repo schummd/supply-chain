@@ -42,10 +42,14 @@ contract('Product', (accounts) => {
         oracleInstance.request(("request"), (error, result) => {
             // if(error) { console.error(error); }
             if(error) {console.log(error)}
+            assert.equal(result.args[1], productInstance.address)
             console.log("received request"); 
             // console.log(result.args.batchID); 
             console.log(result.args)
-            oracleInstance.replyTemp(result.args[0], 6, result.args[1], {from: oracleOwner});
+            // make sure sending back to the right place
+            async() => {
+                await oracleInstance.replyTemp(result.args[0], 6, result.args[1], {from: oracleOwner});
+            }
         })
         });
 

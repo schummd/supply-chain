@@ -225,11 +225,9 @@ contract Product is TemperatureOracleClient {
     {
         if (_temperature > products[_batchID].temperature) {
             products[_batchID].status = false;
-            emit compareTemperatureResult(false);
-            return false;
         }
-        emit compareTemperatureResult(true);
-        return true;
+        emit compareTemperatureResult(products[_batchID].status);
+        return products[_batchID].status;
     }
 
 
