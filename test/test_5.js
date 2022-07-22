@@ -56,20 +56,18 @@ contract('Product', (accounts) => {
         })
     });
 
-    // async function replyTemperature() {
-    //     let temperature = await axios.get(`https://goweather.herokuapp.com/weather/Sydney`)
-    //     .then(response => {
-    //         return response?.data?.temperature?.replace(/[^0-9-\.]/g, "");
-    //     })
-    //     .catch(error =>  {
-    //         console.log(error);
-    //     });
-
-    //     if (!parseInt(temperature)) {
-    //         console.log("invalid temperature");
-    //         return;
-    //     }
-    // };
+    async function replyTemperature() {
+        let temperature = await axios.get(`https://www.random.org/integers/?num=1&min=1&max=6&col=1&base=10&format=plain&rnd=new`)
+        .then(response => {
+            console.log(response.data);
+            return parseInt(response.data)
+        })
+        .catch(error =>  {
+            console.log(error);
+            return;
+        });
+        return temperature;
+    };
 
 
 
@@ -230,35 +228,12 @@ contract('Product', (accounts) => {
     it('Oracle pushing data to products', async() => {
         let result = await productInstance.getTemperature(batchID, { from: producer });
         for (i = 0; i < 10; i++) {
-            let sendTemp = await oracleInstance.replyTemp(batchID, 6, productInstance.address, {from: oracleOwner});
+            let temp = await replyTemperature();
+            console.log(temp);
+            let sendTemp = await oracleInstance.replyTemp(batchID, temp, productInstance.address, {from: oracleOwner});
             let status = await productInstance.getProduct(batchID);
-            assert.equal(status[2], false);
+            console.log(status);
         }
-        // await oracleInstance.getPastEvents().then((ev) => caughtEvent = ev[0]); 
-        // let recvBatchID = caughtEvent.args[0];
-        // let caller = caughtEvent.args[1];
-        // assert.equal(caller, productInstance.address); // assert caller is product contract
-        // console.log('event received');
-        // console.log(recvBatchID, caller);
-
-        // let res = await oracleInstance.replyTemp(recvBatchID, 6, caller, {from: oracleOwner});
-
-        // stall tests 
-        // console.log(result); 
-        
-        // console.log(status); 
-        
-
-        // let response = await oracleInstance.replyTemp(batchID, 10, productInstance.address, { from: oracle });
-        // console.log(response); // returned true
-        // let status = await productInstance.getProduct(batchID);
-        // assert.equal(status[2], false);
-        
-        // status = await productInstance.getStatus.call(batchID, { from: producer }); 
-        // console.log(status); 
-
-        // let temp = await productInstance.checkTemp({ from: producer }); 
-        // console.log(temp); 
     });
 
 })
