@@ -8,6 +8,7 @@ const timeMachine = require('ganache-time-traveler');
 
 const { authorityKeys, generateSignature, generateCertificate } = require('../utilities/certificate.js'); 
 const { initGlobalIpfs, loadIpfs, getIpfs } = require('../utilities/storage'); 
+// const { oracleInstance } = require('../utilities/listener');
 
 contract('Product', (accounts) => {
 
@@ -25,28 +26,51 @@ contract('Product', (accounts) => {
 	const distributor = accounts[2];    // batch distributor 
     const oracleOwner = accounts[8];
 
+    let oracleInstance; 
+    let productInstance; 
+    let registryInstance; 
+
+
+    // LISTENER
+    before('setup contract', async() => {
+
+        registryInstance = await Registry.deployed(); 
+        oracleInstance = await Oracle.deployed(); 
+        productInstance = await Product.deployed();
+
+        // console.log(productInstance.address); 
+        // monitor for events 
+        // oracleInstance.request("bytes32,address", (error, result) => {
+        //     // if(error) { console.error(error); }
+        //     console.log("received request"); 
+        //     // console.log(result.args.batchID); 
+        //     oracleInstance.replyTemp(result.args.batchID, 6, productInstance.address);
+        // }); 
+
+    });
+
     // ------------------------------------------------------------------------------------------------
 
-    it('Authority deploying CA registry contract', async () => {
-        registryInstance = await Registry.deployed(); 
-        await web3.eth.getBalance(registryInstance.address).then((balance) => {
-			assert.equal(balance, 0, "check balance of contract"); 
-		});
-    });
-
-    it('Authority deploying CA registry contract', async () => {
-        oracleInstance = await Oracle.deployed(); 
-        await web3.eth.getBalance(oracleInstance.address).then((balance) => {
-			assert.equal(balance, 0, "check balance of contract"); 
-		});
-    });
+    // it('Authority deploying CA registry contract', async () => {
+    //     registryInstance = await Registry.deployed(); 
+    //     await web3.eth.getBalance(registryInstance.address).then((balance) => {
+	// 		assert.equal(balance, 0, "check balance of contract"); 
+	// 	});
+    // });
     
-    it('Deploying product constract', async () => {
-		productInstance = await Product.deployed();
-		await web3.eth.getBalance(productInstance.address).then((balance) => {
-			assert.equal(balance, 0, "check balance of contract"); 
-		});
-	}); 
+    // it('Deploying oracle contract', async() => {
+    //     oracleInstance = await Oracle.deployed(); 
+    //     await web3.eth.getBalance(oracleInstance.address).then((balance) => {
+	// 		assert.equal(balance, 0, "check balance of contract"); 
+	// 	});
+    // }); 
+
+    // it('Deploying product constract', async () => {
+	// 	productInstance = await Product.deployed();
+	// 	await web3.eth.getBalance(productInstance.address).then((balance) => {
+	// 		assert.equal(balance, 0, "check balance of contract"); 
+	// 	});
+	// }); 
 
     it('DOA adding a certifying authority to the registry', async() => {
         CA = await authorityKeys(); // generate random account keys 
@@ -113,19 +137,63 @@ contract('Product', (accounts) => {
         assert.equal(checkProduct[0], productHash, "check the supplied product hash is the same as stored"); 
         // assert.equal(checkProduct[1], conditionsHash, "check the supplied conditions hash is the same as stored"); 
         assert.equal(checkProduct[1], producer, "check the owner is the same who transacted"); 
-        assert.equal(checkProduct[2], true);
     }); 
 
-    it('Sending data through oracle', async () => {
-        let res = await oracleInstance.replyTemp(batchID, 4,productInstance.address, {from: oracleOwner});
-        let status = await productInstance.getProduct(batchID);
-        assert.equal(status[2], true);
+    // producer can request a certifying authority to issue oragnic certificate 
+    // to a batch he produced; the request producer does is off-chain and may 
+    // involve various communication means (e.g., email)
+    
+    // the CA conducts physical product audit and releases certificate 
+    // to the producer that certifies the product meets organic guidelines 
+
+    // once the producer received the certificate and issuer signature,
+    // he adds this infromation on-chain 
+
+    it('Producer adding certificate to the product', async() => {
+        // CA generates certificate for product batch 
+        let certData = await generateCertificate(batchID, CA[1]); 
+        let certificate = certData[0];
+        let signature = certData[1]; 
+
+        // producer adds certificate to the product 
+        await productInstance.addCertificate(batchID, certificate, signature, { from: producer }); 
+        // check if the certificate the same on-chain 
+        let response = await productInstance.getCertificate.call(batchID); 
+        let returnedCertificate = response[0];
+        let returnedSignature = response[1]; 
+        assert.equal(certificate, returnedCertificate, "check the certificated stored is the same"); 
+        assert.equal(signature, returnedSignature, "check the signature stored is the same"); 
     });
 
-    it('Sending data through oracle, temp too high', async () => {
-        let res = await oracleInstance.replyTemp(batchID, 6,productInstance.address, {from: oracleOwner});
+    // ------------------------------------------------------------------------------------------------
+
+    it('Oracle requesting temperature', async() => {
+        let result = await productInstance.getTemperature(batchID, { from: producer });
+        await oracleInstance.getPastEvents().then((ev) => caughtEvent = ev[0]); 
+        let recvBatchID = caughtEvent.args[0];
+        let caller = caughtEvent.args[1];
+        console.log('event received');
+        console.log(recvBatchID, caller);
+
+        let res = await oracleInstance.replyTemp(recvBatchID, 6, caller, {from: oracleOwner});
+
         let status = await productInstance.getProduct(batchID);
         assert.equal(status[2], false);
+        // console.log(result); 
+        
+        // console.log(status); 
+        
+
+        // let response = await oracleInstance.replyTemp(batchID, 10, productInstance.address, { from: oracle });
+        // console.log(response); // returned true
+        // let status = await productInstance.getProduct(batchID);
+        // assert.equal(status[2], false);
+        
+        // status = await productInstance.getStatus.call(batchID, { from: producer }); 
+        // console.log(status); 
+
+        // let temp = await productInstance.checkTemp({ from: producer }); 
+        // console.log(temp); 
     });
 
 })
