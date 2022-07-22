@@ -16,6 +16,8 @@ Follow the steps to set up:
 
 8. Run test file: ```truffle test ./test/test_1.js```
 
+9. Install axios: ```npm install axios```
+
 --
 
 Working with Truffle: https://trufflesuite.com/docs/truffle/quickstart/
