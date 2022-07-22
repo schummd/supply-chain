@@ -20,7 +20,7 @@ contract Oracle is OracleInterface {
     // emit a request for temperature data for the given batchId for the 
     // listener to hear
     function requestData(bytes32 batchId) public override {
-        emit temperatureRequest(batchId , msg.sender);
+        emit request(batchId, msg.sender);
     }
     
     // send the data from the oracle to the client

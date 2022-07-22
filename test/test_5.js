@@ -1,6 +1,9 @@
 const Product = artifacts.require("Product");
 const Registry = artifacts.require("AuthorityRegistry");
 const Oracle = artifacts.require("Oracle");
+const axios = require('axios');
+
+
 
 const assert = require("chai").assert;
 const truffleAssert = require('truffle-assertions');
@@ -18,60 +21,84 @@ contract('Product', (accounts) => {
 
     let productInfo;                    // producer's product data 
     let productCID;                     // keeps the ID of the product in IPFS
-    let newProductHash;                 // newly computed hash of the product 
-
     const DOA = accounts[9];            // certification registry owner 
 	const owner = accounts[0];          // contract owner 
 	const producer = accounts[1];       // batch producer
 	const distributor = accounts[2];    // batch distributor 
-    const oracle = accounts[8];
+    const oracleOwner = accounts[8];
 
     let oracleInstance; 
     let productInstance; 
     let registryInstance; 
 
+
+    // LISTENER
     before('setup contract', async() => {
 
         registryInstance = await Registry.deployed(); 
         oracleInstance = await Oracle.deployed(); 
         productInstance = await Product.deployed();
-
         // console.log(productInstance.address); 
         // monitor for events 
-        oracleInstance.temperatureRequest("temperatureRequest", (error, result) => {
+        oracleInstance.request(("request"), (error, result) => {
             // if(error) { console.error(error); }
-            console.log("received request"); 
+            if(error) {console.log(error)}
+            assert.equal(result.args[1], productInstance.address)
+            //console.log("received request"); 
             // console.log(result.args.batchID); 
-
-            // call API 
-
-            oracleInstance.replyTemp.call(result.args.batchID, 6, productInstance.address);
-        }); 
-
+            //console.log(result.args)
+            // make sure sending back to the right place
+            // async() => {
+            //    temperature = await replyTemperature();
+            // }
+            let temperature;
+            async() => {
+                temperature = await replyTemperature();
+            }
+            console.log('oracle found:')
+            console.log(temperature);
+            oracleInstance.replyTemp(result.args[0], 6, result.args[1], {from: oracleOwner});
+            // force to wait for compare temperature event to emit
+        })
     });
+
+    async function replyTemperature() {
+        let temperature = await axios.get(`https://www.random.org/integers/?num=1&min=1&max=6&col=1&base=10&format=plain&rnd=new`)
+        .then(response => {
+            console.log(response.data);
+            return parseInt(response.data)
+        })
+        .catch(error =>  {
+            console.log(error);
+            return;
+        });
+        return temperature;
+    };
+
+
 
     // ------------------------------------------------------------------------------------------------
 
-    it('Authority deploying CA registry contract', async () => {
-        registryInstance = await Registry.deployed(); 
-        await web3.eth.getBalance(registryInstance.address).then((balance) => {
-			assert.equal(balance, 0, "check balance of contract"); 
-		});
-    });
+    // it('Authority deploying CA registry contract', async () => {
+    //     registryInstance = await Registry.deployed(); 
+    //     await web3.eth.getBalance(registryInstance.address).then((balance) => {
+	// 		assert.equal(balance, 0, "check balance of contract"); 
+	// 	});
+    // });
     
-    it('Deploying oracle contract', async() => {
-        oracleInstance = await Oracle.deployed(); 
-        await web3.eth.getBalance(oracleInstance.address).then((balance) => {
-			assert.equal(balance, 0, "check balance of contract"); 
-		});
-    }); 
+    // it('Deploying oracle contract', async() => {
+    //     oracleInstance = await Oracle.deployed(); 
+    //     await web3.eth.getBalance(oracleInstance.address).then((balance) => {
+	// 		assert.equal(balance, 0, "check balance of contract"); 
+	// 	});
+    // }); 
 
-    it('Deploying product constract', async () => {
-		productInstance = await Product.deployed();
-		await web3.eth.getBalance(productInstance.address).then((balance) => {
-			assert.equal(balance, 0, "check balance of contract"); 
-		});
-	}); 
+    // it('Deploying product constract', async () => {
+	// 	productInstance = await Product.deployed();
+	// 	await web3.eth.getBalance(productInstance.address).then((balance) => {
+	// 		assert.equal(balance, 0, "check balance of contract"); 
+	// 	});
+	// }); 
 
     it('DOA adding a certifying authority to the registry', async() => {
         CA = await authorityKeys(); // generate random account keys 
@@ -103,7 +130,7 @@ contract('Product', (accounts) => {
             "description": "apples",
             "saleContract": "#4513404285"
         }
-        console.log(); 
+        //console.log(); 
         // initiate a global node for user 
         await initGlobalIpfs(); 
         // store data of the product and get the CID
@@ -124,8 +151,9 @@ contract('Product', (accounts) => {
         // retrieve data from the file storage 
         let retrieveData = await getIpfs(productCID); 
         // generate hash of the data 
+        let newProductHash;                 // newly computed hash of the product 
         let productHash = web3.utils.sha3(retrieveData);
-        let temperature = 8; 
+        let temperature = 5; 
         let stringCID = productCID.toString();
 
         // add a product to the contract 
@@ -169,22 +197,48 @@ contract('Product', (accounts) => {
     // ------------------------------------------------------------------------------------------------
 
     it('Oracle requesting temperature', async() => {
-        await productInstance.requestTemperature(batchID, { from: producer }); 
-        // await productInstance.getPastEvents().then((ev) => console.log(ev)); 
-        let result = await productInstance.getTemperature.call(batchID, { from: producer });
+        let result = await productInstance.getTemperature(batchID, { from: producer });
+        // await oracleInstance.getPastEvents().then((ev) => caughtEvent = ev[0]); 
+        // let recvBatchID = caughtEvent.args[0];
+        // let caller = caughtEvent.args[1];
+        // assert.equal(caller, productInstance.address); // assert caller is product contract
+        // console.log('event received');
+        // console.log(recvBatchID, caller);
 
+        // let res = await oracleInstance.replyTemp(recvBatchID, 6, caller, {from: oracleOwner});
+
+        // stall tests 
+        await getIpfs(productCID); 
+
+        let status = await productInstance.getProduct(batchID);
+        assert.equal(status[2], false);
         // console.log(result); 
-        let status = await productInstance.getStatus.call(batchID, { from: producer }); 
-        console.log(status); 
+        
+        // console.log(status); 
+        
 
-        let response = await oracleInstance.replyTemp(batchID, 10, productInstance.address, { from: oracle });
-        console.log(response);
+        // let response = await oracleInstance.replyTemp(batchID, 10, productInstance.address, { from: oracle });
+        // console.log(response); // returned true
+        // let status = await productInstance.getProduct(batchID);
+        // assert.equal(status[2], false);
         
         // status = await productInstance.getStatus.call(batchID, { from: producer }); 
         // console.log(status); 
 
         // let temp = await productInstance.checkTemp({ from: producer }); 
         // console.log(temp); 
+    });
+
+
+
+    it('Oracle pushing data to products', async() => {
+        for (i = 0; i < 10; i++) {
+            let temp = await replyTemperature();
+            console.log(temp);
+            let sendTemp = await oracleInstance.replyTemp(batchID, temp, productInstance.address, {from: oracleOwner});
+            let status = await productInstance.getProduct(batchID);
+            console.log(status);
+        }
     });
 
 })

@@ -49,6 +49,7 @@ contract Product is TemperatureOracleClient {
 
     // send generated product ID to off-chain 
     event batchIdentifier(bytes32 productID); 
+    event compareTemperatureResult(bool result);
 
     /* PRODUCT FUNCTIONS ------------------------------------------------------------------ */
 
@@ -109,6 +110,7 @@ contract Product is TemperatureOracleClient {
     function updateOwner(bytes32 _batchID, bytes32 _productHash, address _newOwner) public halt(false) onlyOwner(msg.sender, _batchID) {
         require(verifyProductHash(_batchID, _productHash) == true, "product hash verification failed"); 
         require(verifyCertificate(_batchID) == true, "certificate verification failed");
+        require(products[_batchID].status == true, "The product has not been kept at the right temperature"); 
         products[_batchID].owner = _newOwner; 
     }
 
@@ -147,8 +149,10 @@ contract Product is TemperatureOracleClient {
      * @return bytes32 product hash stored on-chain 
      * @return address of the current owner of the batch 
     **/
-    function getProduct(bytes32 _batchID) public view halt(false) returns(bytes32, address) {
-        return (products[_batchID].productHash, products[_batchID].owner);
+    function getProduct(bytes32 _batchID) public view 
+    notHalted()
+    returns(bytes32, address, bool) {
+        return (products[_batchID].productHash, products[_batchID].owner, products[_batchID].status);
     }
 
     /**
@@ -210,10 +214,9 @@ contract Product is TemperatureOracleClient {
     function compareTemperature(bytes32 _batchID, uint256 _temperature) private halt(false) returns(bool) {
         if (_temperature > products[_batchID].temperature) {
             products[_batchID].status = false;
-            emit badTemperature("temperature is low");
-            return false;
         }
-        return true;
+        emit compareTemperatureResult(products[_batchID].status);
+        return products[_batchID].status;
     }
 
 
