@@ -1,0 +1,145 @@
+{
+  "contractName": "OracleInterface",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "batchId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "requestData",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.15+commit.e14f2714\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"batchId\",\"type\":\"bytes32\"}],\"name\":\"requestData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/OracleInterface.sol\":\"OracleInterface\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/OracleInterface.sol\":{\"keccak256\":\"0x23a54356d56663ac7b650b52f2a5e14794e1b823756a4e7f834b83eee968d056\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://3e3a7e0611b2b6ddbd78b98701c7219ef5c29b7bc73c92927363b7ebc66e516e\",\"dweb:/ipfs/QmZsmRsSTPG2HtZUHn73ct7QhJ2g4MagFUM73TVPBqMs5u\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "//SPDX-License-Identifier: UNLICENSED\n\n// CREDIT: https://github.com/COMP6452-UNSW/oracle_example/tree/master/smart_contracts (adapted from above git repo)\n \npragma solidity ^0.8.0;\n// contract that defines the interface to interact with oracle\ninterface OracleInterface {\n    function requestData(bytes32 batchId) external;\n}\n\n\n\n\n\n",
+  "sourcePath": "/Users/dariaschumm/Library/Mobile Documents/com~apple~CloudDocs/6452/project_2/contracts/OracleInterface.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/OracleInterface.sol",
+    "exportedSymbols": {
+      "OracleInterface": [
+        231
+      ]
+    },
+    "id": 232,
+    "license": "UNLICENSED",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 225,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "158:23:3"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "OracleInterface",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "id": 231,
+        "linearizedBaseContracts": [
+          231
+        ],
+        "name": "OracleInterface",
+        "nameLocation": "255:15:3",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "functionSelector": "3661346b",
+            "id": 230,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "requestData",
+            "nameLocation": "286:11:3",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 228,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 227,
+                  "mutability": "mutable",
+                  "name": "batchId",
+                  "nameLocation": "306:7:3",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 230,
+                  "src": "298:15:3",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 226,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "298:7:3",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "297:17:3"
+            },
+            "returnParameters": {
+              "id": 229,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "323:0:3"
+            },
+            "scope": 231,
+            "src": "277:47:3",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 232,
+        "src": "245:81:3",
+        "usedErrors": []
+      }
+    ],
+    "src": "158:174:3"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.15+commit.e14f2714.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.8",
+  "updatedAt": "2022-07-22T22:07:04.695Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}

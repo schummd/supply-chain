@@ -1,0 +1,872 @@
+{
+  "contractName": "TemperatureOracleClient",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "data",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "batchId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "receiveDataFromOracle",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.15+commit.e14f2714\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"data\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"batchId\",\"type\":\"bytes32\"}],\"name\":\"receiveDataFromOracle\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/OracleClient.sol\":\"TemperatureOracleClient\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/OracleClient.sol\":{\"keccak256\":\"0x3a8279c4f44f03e9c2caf9b0f0e9f8ae793a5144306fd69cf707f8330e26311a\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://d5adf648fa87f078a85e60550f4ba7424268e19330c2c9e4233fd1053b88441e\",\"dweb:/ipfs/QmYWv8d1mEWxfDWiJdvJVDZX7tP3X5JZgAAercjnD3thjq\"]},\"project:/contracts/OracleInterface.sol\":{\"keccak256\":\"0x23a54356d56663ac7b650b52f2a5e14794e1b823756a4e7f834b83eee968d056\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://3e3a7e0611b2b6ddbd78b98701c7219ef5c29b7bc73c92927363b7ebc66e516e\",\"dweb:/ipfs/QmZsmRsSTPG2HtZUHn73ct7QhJ2g4MagFUM73TVPBqMs5u\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "//SPDX-License-Identifier: UNLICENSED\n \npragma solidity ^0.8.0;\n\nimport \"./OracleInterface.sol\";\n\n\n//The abstract class for the temperature oracle client\nabstract contract TemperatureOracleClient {\n    \n    address _oracleAddress;\n\n    constructor(address oracleAddress) {\n        _oracleAddress = oracleAddress;\n    } \n\n    // only the oracle should be able to update the data in the products contract\n    modifier oracleOnly() { require(msg.sender == _oracleAddress, 'data must come from the oracle contract'); _; }\n\n    // function to request the temperature from the oracle temperature source\n    // call request temperature for the given batch Id\n    function requestTemperatureFromOracle(bytes32 batchId) internal {\n        // encode batch Id as data for the request\n        OracleInterface(_oracleAddress).requestData(batchId);\n    }\n\n    // receive the data for the given request ID\n    function receiveDataFromOracle(uint256 data, bytes32 batchId) oracleOnly() public returns (bool) {\n        // convert bytes received into the received temperature and the \n        // batchId the temperature was requested for\n        return receiveTemperatureFromOracle(batchId, data);\n    }\n\n    // define what to do with the received temperature in the products contract\n    function receiveTemperatureFromOracle (bytes32 batchId, uint256 recvdTemp) internal virtual returns (bool);\n}",
+  "sourcePath": "/Users/dariaschumm/Library/Mobile Documents/com~apple~CloudDocs/6452/project_2/contracts/OracleClient.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/OracleClient.sol",
+    "exportedSymbols": {
+      "OracleInterface": [
+        231
+      ],
+      "TemperatureOracleClient": [
+        223
+      ]
+    },
+    "id": 224,
+    "license": "UNLICENSED",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 158,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "40:23:2"
+      },
+      {
+        "absolutePath": "project:/contracts/OracleInterface.sol",
+        "file": "./OracleInterface.sol",
+        "id": 159,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 224,
+        "sourceUnit": 232,
+        "src": "65:31:2",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "abstract": true,
+        "baseContracts": [],
+        "canonicalName": "TemperatureOracleClient",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "fullyImplemented": false,
+        "id": 223,
+        "linearizedBaseContracts": [
+          223
+        ],
+        "name": "TemperatureOracleClient",
+        "nameLocation": "172:23:2",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 161,
+            "mutability": "mutable",
+            "name": "_oracleAddress",
+            "nameLocation": "215:14:2",
+            "nodeType": "VariableDeclaration",
+            "scope": 223,
+            "src": "207:22:2",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 160,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "207:7:2",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 170,
+              "nodeType": "Block",
+              "src": "271:47:2",
+              "statements": [
+                {
+                  "expression": {
+                    "id": 168,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "id": 166,
+                      "name": "_oracleAddress",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 161,
+                      "src": "281:14:2",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "id": 167,
+                      "name": "oracleAddress",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 163,
+                      "src": "298:13:2",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "src": "281:30:2",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 169,
+                  "nodeType": "ExpressionStatement",
+                  "src": "281:30:2"
+                }
+              ]
+            },
+            "id": 171,
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [],
+            "name": "",
+            "nameLocation": "-1:-1:-1",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 164,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 163,
+                  "mutability": "mutable",
+                  "name": "oracleAddress",
+                  "nameLocation": "256:13:2",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 171,
+                  "src": "248:21:2",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 162,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "248:7:2",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "247:23:2"
+            },
+            "returnParameters": {
+              "id": 165,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "271:0:2"
+            },
+            "scope": 223,
+            "src": "236:82:2",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 182,
+              "nodeType": "Block",
+              "src": "429:88:2",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "commonType": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        "id": 177,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "expression": {
+                            "id": 174,
+                            "name": "msg",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 4294967281,
+                            "src": "439:3:2",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_magic_message",
+                              "typeString": "msg"
+                            }
+                          },
+                          "id": 175,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "sender",
+                          "nodeType": "MemberAccess",
+                          "src": "439:10:2",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "==",
+                        "rightExpression": {
+                          "id": 176,
+                          "name": "_oracleAddress",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 161,
+                          "src": "453:14:2",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "src": "439:28:2",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "hexValue": "64617461206d75737420636f6d652066726f6d20746865206f7261636c6520636f6e7472616374",
+                        "id": 178,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "469:41:2",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_c6bd04f87c7075c0c8cd62f86e6459af9265adb76d6b54242ca66aaf00fb4258",
+                          "typeString": "literal_string \"data must come from the oracle contract\""
+                        },
+                        "value": "data must come from the oracle contract"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_c6bd04f87c7075c0c8cd62f86e6459af9265adb76d6b54242ca66aaf00fb4258",
+                          "typeString": "literal_string \"data must come from the oracle contract\""
+                        }
+                      ],
+                      "id": 173,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        4294967278,
+                        4294967278
+                      ],
+                      "referencedDeclaration": 4294967278,
+                      "src": "431:7:2",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 179,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "431:80:2",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 180,
+                  "nodeType": "ExpressionStatement",
+                  "src": "431:80:2"
+                },
+                {
+                  "id": 181,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "513:1:2"
+                }
+              ]
+            },
+            "id": 183,
+            "name": "oracleOnly",
+            "nameLocation": "416:10:2",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 172,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "426:2:2"
+            },
+            "src": "407:110:2",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 195,
+              "nodeType": "Block",
+              "src": "720:120:2",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 192,
+                        "name": "batchId",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 185,
+                        "src": "825:7:2",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      ],
+                      "expression": {
+                        "arguments": [
+                          {
+                            "id": 189,
+                            "name": "_oracleAddress",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 161,
+                            "src": "797:14:2",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          ],
+                          "id": 188,
+                          "name": "OracleInterface",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 231,
+                          "src": "781:15:2",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_contract$_OracleInterface_$231_$",
+                            "typeString": "type(contract OracleInterface)"
+                          }
+                        },
+                        "id": 190,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "typeConversion",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "781:31:2",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_OracleInterface_$231",
+                          "typeString": "contract OracleInterface"
+                        }
+                      },
+                      "id": 191,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "requestData",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 230,
+                      "src": "781:43:2",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_nonpayable$_t_bytes32_$returns$__$",
+                        "typeString": "function (bytes32) external"
+                      }
+                    },
+                    "id": 193,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "781:52:2",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 194,
+                  "nodeType": "ExpressionStatement",
+                  "src": "781:52:2"
+                }
+              ]
+            },
+            "id": 196,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "requestTemperatureFromOracle",
+            "nameLocation": "665:28:2",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 186,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 185,
+                  "mutability": "mutable",
+                  "name": "batchId",
+                  "nameLocation": "702:7:2",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 196,
+                  "src": "694:15:2",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 184,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "694:7:2",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "693:17:2"
+            },
+            "returnParameters": {
+              "id": 187,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "720:0:2"
+            },
+            "scope": 223,
+            "src": "656:184:2",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 212,
+              "nodeType": "Block",
+              "src": "992:193:2",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 208,
+                        "name": "batchId",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 200,
+                        "src": "1164:7:2",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      {
+                        "id": 209,
+                        "name": "data",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 198,
+                        "src": "1173:4:2",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "id": 207,
+                      "name": "receiveTemperatureFromOracle",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 222,
+                      "src": "1135:28:2",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_uint256_$returns$_t_bool_$",
+                        "typeString": "function (bytes32,uint256) returns (bool)"
+                      }
+                    },
+                    "id": 210,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1135:43:2",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 206,
+                  "id": 211,
+                  "nodeType": "Return",
+                  "src": "1128:50:2"
+                }
+              ]
+            },
+            "functionSelector": "24c45f68",
+            "id": 213,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "arguments": [],
+                "id": 203,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 202,
+                  "name": "oracleOnly",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 183,
+                  "src": "957:10:2"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "957:12:2"
+              }
+            ],
+            "name": "receiveDataFromOracle",
+            "nameLocation": "904:21:2",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 201,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 198,
+                  "mutability": "mutable",
+                  "name": "data",
+                  "nameLocation": "934:4:2",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 213,
+                  "src": "926:12:2",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 197,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "926:7:2",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 200,
+                  "mutability": "mutable",
+                  "name": "batchId",
+                  "nameLocation": "948:7:2",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 213,
+                  "src": "940:15:2",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 199,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "940:7:2",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "925:31:2"
+            },
+            "returnParameters": {
+              "id": 206,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 205,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 213,
+                  "src": "986:4:2",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 204,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "986:4:2",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "985:6:2"
+            },
+            "scope": 223,
+            "src": "895:290:2",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "id": 222,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "receiveTemperatureFromOracle",
+            "nameLocation": "1280:28:2",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 218,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 215,
+                  "mutability": "mutable",
+                  "name": "batchId",
+                  "nameLocation": "1318:7:2",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 222,
+                  "src": "1310:15:2",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 214,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1310:7:2",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 217,
+                  "mutability": "mutable",
+                  "name": "recvdTemp",
+                  "nameLocation": "1335:9:2",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 222,
+                  "src": "1327:17:2",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 216,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1327:7:2",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1309:36:2"
+            },
+            "returnParameters": {
+              "id": 221,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 220,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 222,
+                  "src": "1372:4:2",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 219,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1372:4:2",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1371:6:2"
+            },
+            "scope": 223,
+            "src": "1271:107:2",
+            "stateMutability": "nonpayable",
+            "virtual": true,
+            "visibility": "internal"
+          }
+        ],
+        "scope": 224,
+        "src": "154:1226:2",
+        "usedErrors": []
+      }
+    ],
+    "src": "40:1340:2"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.15+commit.e14f2714.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.8",
+  "updatedAt": "2022-07-22T22:07:04.695Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}
