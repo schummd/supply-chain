@@ -6,7 +6,7 @@ import "./OracleClient.sol";
 // abstract class for oracle contract, which implements the oracle interface
 contract Oracle is OracleInterface {
     
-    event temperatureRequest(bytes32 batchID, address caller);
+    event request(bytes32 batchID, address caller);
 
     address public trustedServer;
 

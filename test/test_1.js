@@ -3,7 +3,7 @@ const Registry = artifacts.require("AuthorityRegistry");
 
 const assert = require("chai").assert;
 const truffleAssert = require('truffle-assertions');
-const timeMachine = require('ganache-time-traveler');
+// const timeMachine = require('ganache-time-traveler');
 
 const { authorityKeys, generateSignature, generateCertificate } = require('../utilities/certificate.js'); 
 const { initGlobalIpfs, loadIpfs, getIpfs } = require('../utilities/storage'); 

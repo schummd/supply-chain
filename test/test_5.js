@@ -1,17 +1,16 @@
 const Product = artifacts.require("Product");
 const Registry = artifacts.require("AuthorityRegistry");
 const Oracle = artifacts.require("Oracle");
-const axios = require('axios');
 
-
+// const axios = require('axios');
 
 const assert = require("chai").assert;
 const truffleAssert = require('truffle-assertions');
-const timeMachine = require('ganache-time-traveler');
+// const timeMachine = require('ganache-time-traveler');
 
 const { authorityKeys, generateSignature, generateCertificate } = require('../utilities/certificate.js'); 
 const { initGlobalIpfs, loadIpfs, getIpfs } = require('../utilities/storage'); 
-// const { oracleInstance } = require('../utilities/listener');
+
 
 contract('Product', (accounts) => {
 
@@ -32,73 +31,73 @@ contract('Product', (accounts) => {
     let registryInstance; 
 
 
-    // LISTENER
-    before('setup contract', async() => {
+    // // LISTENER
+    // before('setup contract', async() => {
 
-        registryInstance = await Registry.deployed(); 
-        oracleInstance = await Oracle.deployed(); 
-        productInstance = await Product.deployed();
-        // console.log(productInstance.address); 
-        // monitor for events 
-        oracleInstance.request(("request"), (error, result) => {
-            // if(error) { console.error(error); }
-            if(error) {console.log(error)}
-            assert.equal(result.args[1], productInstance.address)
-            //console.log("received request"); 
-            // console.log(result.args.batchID); 
-            //console.log(result.args)
-            // make sure sending back to the right place
-            // async() => {
-            //    temperature = await replyTemperature();
-            // }
-            let temperature;
-            async() => {
-                temperature = await replyTemperature();
-            }
-            console.log('oracle found:')
-            console.log(temperature);
-            oracleInstance.replyTemp(result.args[0], 6, result.args[1], {from: oracleOwner});
-            // force to wait for compare temperature event to emit
-        })
-    });
+    //     registryInstance = await Registry.deployed(); 
+    //     oracleInstance = await Oracle.deployed(); 
+    //     productInstance = await Product.deployed();
+    //     // console.log(productInstance.address); 
+    //     // monitor for events 
+    //     oracleInstance.request(("request"), (error, result) => {
+    //         // if(error) { console.error(error); }
+    //         if(error) {console.log(error)}
+    //         assert.equal(result.args[1], productInstance.address)
+    //         //console.log("received request"); 
+    //         // console.log(result.args.batchID); 
+    //         //console.log(result.args)
+    //         // make sure sending back to the right place
+    //         // async() => {
+    //         //    temperature = await replyTemperature();
+    //         // }
+    //         let temperature;
+    //         async() => {
+    //             temperature = await replyTemperature();
+    //         }
+    //         console.log('oracle found:')
+    //         console.log(temperature);
+    //         oracleInstance.replyTemp(result.args[0], 6, result.args[1], {from: oracleOwner});
+    //         // force to wait for compare temperature event to emit
+    //     })
+    // });
 
-    async function replyTemperature() {
-        let temperature = await axios.get(`https://www.random.org/integers/?num=1&min=1&max=6&col=1&base=10&format=plain&rnd=new`)
-        .then(response => {
-            console.log(response.data);
-            return parseInt(response.data)
-        })
-        .catch(error =>  {
-            console.log(error);
-            return;
-        });
-        return temperature;
-    };
+    // async function replyTemperature() {
+    //     let temperature = await axios.get(`https://www.random.org/integers/?num=1&min=1&max=6&col=1&base=10&format=plain&rnd=new`)
+    //     .then(response => {
+    //         console.log(response.data);
+    //         return parseInt(response.data)
+    //     })
+    //     .catch(error =>  {
+    //         console.log(error);
+    //         return;
+    //     });
+    //     return temperature;
+    // };
 
 
 
     // ------------------------------------------------------------------------------------------------
 
-    // it('Authority deploying CA registry contract', async () => {
-    //     registryInstance = await Registry.deployed(); 
-    //     await web3.eth.getBalance(registryInstance.address).then((balance) => {
-	// 		assert.equal(balance, 0, "check balance of contract"); 
-	// 	});
-    // });
+    it('Authority deploying CA registry contract', async () => {
+        registryInstance = await Registry.deployed(); 
+        await web3.eth.getBalance(registryInstance.address).then((balance) => {
+			assert.equal(balance, 0, "check balance of contract"); 
+		});
+    });
     
-    // it('Deploying oracle contract', async() => {
-    //     oracleInstance = await Oracle.deployed(); 
-    //     await web3.eth.getBalance(oracleInstance.address).then((balance) => {
-	// 		assert.equal(balance, 0, "check balance of contract"); 
-	// 	});
-    // }); 
+    it('Deploying oracle contract', async() => {
+        oracleInstance = await Oracle.deployed(); 
+        await web3.eth.getBalance(oracleInstance.address).then((balance) => {
+			assert.equal(balance, 0, "check balance of contract"); 
+		});
+    }); 
 
-    // it('Deploying product constract', async () => {
-	// 	productInstance = await Product.deployed();
-	// 	await web3.eth.getBalance(productInstance.address).then((balance) => {
-	// 		assert.equal(balance, 0, "check balance of contract"); 
-	// 	});
-	// }); 
+    it('Deploying product constract', async () => {
+		productInstance = await Product.deployed();
+		await web3.eth.getBalance(productInstance.address).then((balance) => {
+			assert.equal(balance, 0, "check balance of contract"); 
+		});
+	}); 
 
     it('DOA adding a certifying authority to the registry', async() => {
         CA = await authorityKeys(); // generate random account keys 
@@ -231,14 +230,14 @@ contract('Product', (accounts) => {
 
 
 
-    it('Oracle pushing data to products', async() => {
-        for (i = 0; i < 10; i++) {
-            let temp = await replyTemperature();
-            console.log(temp);
-            let sendTemp = await oracleInstance.replyTemp(batchID, temp, productInstance.address, {from: oracleOwner});
-            let status = await productInstance.getProduct(batchID);
-            console.log(status);
-        }
-    });
+    // it('Oracle pushing data to products', async() => {
+    //     for (i = 0; i < 10; i++) {
+    //         let temp = await replyTemperature();
+    //         console.log(temp);
+    //         let sendTemp = await oracleInstance.replyTemp(batchID, temp, productInstance.address, {from: oracleOwner});
+    //         let status = await productInstance.getProduct(batchID);
+    //         console.log(status);
+    //     }
+    // });
 
 })

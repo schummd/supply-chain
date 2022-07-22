@@ -149,9 +149,7 @@ contract Product is TemperatureOracleClient {
      * @return bytes32 product hash stored on-chain 
      * @return address of the current owner of the batch 
     **/
-    function getProduct(bytes32 _batchID) public view 
-    notHalted()
-    returns(bytes32, address, bool) {
+    function getProduct(bytes32 _batchID) public view halt(false) returns(bytes32, address, bool) {
         return (products[_batchID].productHash, products[_batchID].owner, products[_batchID].status);
     }
 
