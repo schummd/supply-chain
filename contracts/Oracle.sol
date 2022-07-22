@@ -4,15 +4,13 @@ pragma solidity ^0.8.0;
 import "./OracleClient.sol";
 // abstract class for oracle contract, which implements the oracle interface
 contract Oracle is OracleInterface {
+    
     event request(bytes32 batchId, address caller);
 
     address public trustedServer;
 
     // only get temperature from declared source
-    modifier trusted(address serverAddr) {
-        
-        require(serverAddr == trustedServer, 'data must come from the trusted source'); _;
-    }
+    modifier trusted(address serverAddr) { require(serverAddr == trustedServer, 'data must come from the trusted source'); _; }
 
     constructor(address serverAddr) {
         trustedServer = serverAddr;
