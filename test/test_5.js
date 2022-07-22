@@ -37,17 +37,19 @@ contract('Product', (accounts) => {
         registryInstance = await Registry.deployed(); 
         oracleInstance = await Oracle.deployed(); 
         productInstance = await Product.deployed();
-
         // console.log(productInstance.address); 
         // monitor for events 
-        // oracleInstance.request("bytes32,address", (error, result) => {
-        //     // if(error) { console.error(error); }
-        //     console.log("received request"); 
-        //     // console.log(result.args.batchID); 
-        //     oracleInstance.replyTemp(result.args.batchID, 6, productInstance.address);
-        // }); 
+        oracleInstance.request(("request"), (error, result) => {
+            // if(error) { console.error(error); }
+            if(error) {console.log(error)}
+            console.log("received request"); 
+            // console.log(result.args.batchID); 
+            console.log(result.args)
+            oracleInstance.replyTemp(result.args[0], 6, result.args[1], {from: oracleOwner});
+        })
+        });
 
-    });
+
 
     // ------------------------------------------------------------------------------------------------
 
@@ -169,13 +171,14 @@ contract('Product', (accounts) => {
 
     it('Oracle requesting temperature', async() => {
         let result = await productInstance.getTemperature(batchID, { from: producer });
-        await oracleInstance.getPastEvents().then((ev) => caughtEvent = ev[0]); 
-        let recvBatchID = caughtEvent.args[0];
-        let caller = caughtEvent.args[1];
-        console.log('event received');
-        console.log(recvBatchID, caller);
+        // await oracleInstance.getPastEvents().then((ev) => caughtEvent = ev[0]); 
+        // let recvBatchID = caughtEvent.args[0];
+        // let caller = caughtEvent.args[1];
+        // assert.equal(caller, productInstance.address); // assert caller is product contract
+        // console.log('event received');
+        // console.log(recvBatchID, caller);
 
-        let res = await oracleInstance.replyTemp(recvBatchID, 6, caller, {from: oracleOwner});
+        // let res = await oracleInstance.replyTemp(recvBatchID, 6, caller, {from: oracleOwner});
 
         let status = await productInstance.getProduct(batchID);
         assert.equal(status[2], false);
