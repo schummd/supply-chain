@@ -8,7 +8,3 @@ interface OracleInterface {
     function requestData(bytes32 batchId) external;
 }
 
-
-
-
-

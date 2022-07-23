@@ -5,10 +5,12 @@ import "./CARegistry.sol";
 import "./OracleClient.sol";
 
 contract Product is TemperatureOracleClient {
+
     bool internal halted;
     bool internal locked;               // lock for payments (not sure if necessary yet)
     address payable owner;              // owner of this contract (who deployed)
     address DOA;                        // Department of Agriculture contract address 
+    uint256 recvdTemp;
 
     struct Batch {                      // keeps the hash of product data and conditions 
         bytes32 productHash;            // hash of the data stored off-chain 
@@ -19,8 +21,6 @@ contract Product is TemperatureOracleClient {
         uint256 temperature;            // required temp of the product as provided in required conitions
         bool status;                    // the status of the product, true means ok - not sure if needed
     }
-    uint256 _recvdTemp;
-
     
     mapping (bytes32 => Batch) products;    // maps each product ID to a product data   
     mapping (bytes32 => string) database;   // maps batchID to IPFS storage link 
@@ -31,47 +31,19 @@ contract Product is TemperatureOracleClient {
         owner = _owner; 
     }
 
-    ////////////////////////ORACLE //////////////////////////////
-    // function to request the temperature from the oracle for a 
-    // given batchId
-    function getTemperature(bytes32 batchId) public 
-    {
-        // send a request to the oracle for the temperature
-        requestTemperatureFromOracle(batchId);
-        // remember what oracle requests are associated with what batches
-
-    }
-
-    // receive the reply from the oracle
-    function receiveTemperatureFromOracle(bytes32 batchId, uint256 recvdTemp) internal override returns (bool) {
-        // this will check received temp against required temp in products 
-        return compareTemperature(batchId, recvdTemp);
-
-    }
-    /////////////////////////////////////////////////////////////
-
-
-    modifier onlyThis(address _address) { require(msg.sender == _address, "Only authorised address can call this function"); _; }
-
-    modifier notHalted () {require(halted == false, 'The contract has been halted'); _;}
-
-    modifier isHalted () {require(halted == true, 'The contract is not halted'); _;}
-    
+    // check if the contract temporarily disabled 
+    modifier halt(bool _state) { require (halted == _state, "contract halt"); _; }
     // check if the caller the current owner of the batch
     modifier onlyOwner(address _address, bytes32 _batchID) { require(products[_batchID].owner == msg.sender, "only owner can call this function"); _; }
     // check if the producer authorised to add products
     modifier onlyProducer(address _address) { require(producers[_address] == true, "only authorised producer can call this function"); _; }
     // check if the caller is the contract owner 
     modifier onlyDeployer() { require(owner == msg.sender, "only contract owner can call this function"); _; }
-    // lock against reentrancy 
-    modifier lock() { 
-        require(!locked); 
-        locked = true; _; 
-        locked = false;
-    }
 
     // send generated product ID to off-chain 
     event batchIdentifier(bytes32 productID); 
+    // send temperature comparison result to off-chain
+    event compareTemperatureResult(bool result);
 
     /* PRODUCT FUNCTIONS ------------------------------------------------------------------ */
 
@@ -82,9 +54,7 @@ contract Product is TemperatureOracleClient {
      * @dev    only contract owner can call 
      * @param  _producer batch producer address 
     **/
-    function addProducer(address _producer) public 
-    notHalted()
-    onlyDeployer() {
+    function addProducer(address _producer) public halt(false) onlyDeployer() {
         producers[_producer] = true; 
     }
 
@@ -96,9 +66,7 @@ contract Product is TemperatureOracleClient {
      * @param  _temperature stores required temperature
      * @param  _CID unique identifier of the off-chain storage
     **/
-    function addProduct(bytes32 _data, uint256 _temperature, string memory _CID) public 
-    notHalted()
-    onlyProducer(msg.sender) {
+    function addProduct(bytes32 _data, uint256 _temperature, string memory _CID) public halt(false) onlyProducer(msg.sender) {
         bytes32 batchID = bytes32(keccak256(abi.encodePacked(_data))); 
         products[batchID].productHash = _data; 
         products[batchID].owner = msg.sender; 
@@ -118,9 +86,7 @@ contract Product is TemperatureOracleClient {
      * @param  _certificate certificate certifying product batch
      * @param  _signature signature of the certificate issuer 
     **/
-    function addCertificate(bytes32 _batchID, bytes32 _certificate, bytes memory _signature) public 
-    notHalted()
-    onlyOwner(msg.sender, _batchID) {
+    function addCertificate(bytes32 _batchID, bytes32 _certificate, bytes memory _signature) public halt(false) onlyOwner(msg.sender, _batchID) {
         require(products[_batchID].producer == products[_batchID].owner, "producer of the batch is not the owner"); 
         products[_batchID].certificate = _certificate; 
         products[_batchID].signature = _signature; 
@@ -135,12 +101,21 @@ contract Product is TemperatureOracleClient {
      * @param  _productHash hash of the product to verify
      * @param  _newOwner address of a new batch owner 
     **/
-    function updateOwner(bytes32 _batchID, bytes32 _productHash, address _newOwner) public
-    notHalted()
-    onlyOwner(msg.sender, _batchID) {
+    function updateOwner(bytes32 _batchID, bytes32 _productHash, address _newOwner) public halt(false) onlyOwner(msg.sender, _batchID) {
         require(verifyProductHash(_batchID, _productHash) == true, "product hash verification failed"); 
         require(verifyCertificate(_batchID) == true, "certificate verification failed");
         products[_batchID].owner = _newOwner; 
+    }
+
+    /**
+     * @notice lets a product owner to update product status 
+     *         based on physical off-chain investigation
+     * @dev    only batch current owner can call 
+     * @param  _batchID unique identifier of the batch 
+     * @param  _status new status of the batch 
+    **/
+    function updateStatus(bytes32 _batchID, bool _status) public halt(false) onlyOwner(msg.sender, _batchID) {
+        products[_batchID].status = _status; 
     }
 
     /* VERIFICATION FUNCTIONS ----------------------------------------------------------------- */
@@ -153,9 +128,7 @@ contract Product is TemperatureOracleClient {
      * @return bool if the hash stored on-chain is the same as newly computed hash,
      *         then product infromation is correct and has not been modified 
     **/
-    function verifyProductHash(bytes32 _batchID, bytes32 _offchainHash) public 
-    notHalted()
-    view returns (bool) {
+    function verifyProductHash(bytes32 _batchID, bytes32 _offchainHash) public halt(false) view returns(bool) {
         if (products[_batchID].productHash == _offchainHash) { return true;}
         return false;
     }
@@ -169,9 +142,7 @@ contract Product is TemperatureOracleClient {
      * @param  _producer batch producer address 
      * @return bool true if address is in mapping 
     **/
-    function getProducer(address _producer) public view 
-    notHalted()
-    returns(bool) {
+    function getProducer(address _producer) public view halt(false) returns(bool) {
         return producers[_producer]; 
     }
 
@@ -182,10 +153,8 @@ contract Product is TemperatureOracleClient {
      * @return bytes32 product hash stored on-chain 
      * @return address of the current owner of the batch 
     **/
-    function getProduct(bytes32 _batchID) public view 
-    notHalted()
-    returns(bytes32, address) {
-        return (products[_batchID].productHash, products[_batchID].owner);
+    function getProduct(bytes32 _batchID) public view halt(false) returns(bytes32, address, bool) {
+        return (products[_batchID].productHash, products[_batchID].owner, products[_batchID].status);
     }
 
     /**
@@ -195,9 +164,7 @@ contract Product is TemperatureOracleClient {
      * @return bytes32 batch certificate on-chain
      * @return bytes array of the issuer signature
     **/
-    function getCertificate(bytes32 _batchID) public view 
-    notHalted()
-    returns(bytes32, bytes memory) {
+    function getCertificate(bytes32 _batchID) public view halt(false) returns(bytes32, bytes memory) {
         return (products[_batchID].certificate, products[_batchID].signature); 
     }
 
@@ -207,52 +174,53 @@ contract Product is TemperatureOracleClient {
      * @param  _batchID unique batch ID to get the product 
      * @return string unique IPFS storage identifier (CID)
     **/
-    function getDatabase(bytes32 _batchID) public view 
-    notHalted()
-    returns(string memory) {
+    function getDatabase(bytes32 _batchID) public view halt(false) returns(string memory) {
         return database[_batchID]; 
+    }
+
+    /**
+     * @notice get status of the batch 
+     * @dev    anyone can call function 
+     * @param  _batchID unique batch ID to get the product 
+     * @return bool reads batch status 
+    **/
+    function getStatus(bytes32 _batchID) public view halt(false) returns(bool) {
+        return products[_batchID].status; 
+    }
+
+    /* ORACLE FUNCTIONS -------------------------------------------------------------------- */
+
+    // function to request the temperature from the oracle for a 
+    // given batchId
+    // send a request to the oracle for the temperature
+    function getTemperature(bytes32 _batchID) public {
+        requestTemperatureFromOracle(_batchID);
+    }
+
+    // receive the reply from the oracle
+    function receiveTemperatureFromOracle(bytes32 _batchID, uint256 _recvdTemp) internal override returns(bool) {
+        // this will check received temp against required temp in products 
+        return compareTemperature(_batchID, _recvdTemp);
     }
 
     /* TEMPERATURE FUNCTIONS ------------------------------------------------------------------ */
 
-    // requires oracle 
-    // have restricted to private so anyone cannot call this 
-    // is there a way to resctrict this to the oracle?
-    function compareTemperature(bytes32 _batchID, uint256 _temperature) private 
-    notHalted()
-    returns (bool)
-    {
-        if (_temperature > products[_batchID].temperature) {
+    /**
+     * @notice oracle function that is called once data received,
+     *         required temperature is compared with newly received 
+     *         temperature and status is set to false when temperature
+     *         is abnormal, event emitted and users can be notified 
+     * @dev    oracle only can call the function 
+     * @param  _batchID unique batch ID to get the product 
+     * @param  _newTemperature received temperature from external source
+     * @return bool new status of the product
+    **/
+    function compareTemperature(bytes32 _batchID, uint256 _newTemperature) private halt(false) returns(bool) {
+        if (_newTemperature > products[_batchID].temperature) {
             products[_batchID].status = false;
-            return false;
         }
-        return true;
-    }
-
-
-    // allow owner to reset product status in the event of oracle malfunction
-    // they must provide an alternative temperature reading
-    function updateStatus(bytes32 _batchID, uint256 _temperature) public
-    notHalted()
-    onlyThis(products[_batchID].owner)
-    {
-        compareTemperature(_batchID, _temperature);
-    }
-
-    // following can only be executed by contract owner
-    function emergencyHalt()
-    onlyDeployer()
-    notHalted()
-    public 
-    {
-        halted = true;
-    }
-
-    function restartContract() public
-    onlyDeployer()
-    isHalted()
-    {
-        halted = false;
+        emit compareTemperatureResult(products[_batchID].status);
+        return products[_batchID].status;
     }
 
     /* CERTIFICATE FUNCTIONS ------------------------------------------------------------------ */
@@ -266,9 +234,7 @@ contract Product is TemperatureOracleClient {
      * @return bool if the issuer is registered with DOA, then 
      *         certificate is valid, otherwise returns false 
     **/
-    function verifyCertificate(bytes32 _batchID) public view
-    notHalted()
-    returns(bool) {
+    function verifyCertificate(bytes32 _batchID) public view halt(false) returns(bool) {
         bytes32 certificate = products[_batchID].certificate; 
         bytes memory signature = products[_batchID].signature; 
         // recovered issuer from the certificate and his signature 
@@ -324,6 +290,22 @@ contract Product is TemperatureOracleClient {
     **/
     function destroyContract() public onlyDeployer() {
         selfdestruct(owner); 
+    }
+
+    /**
+     * @notice tempotarity deactivate contract 
+     * @dev    only the contract owner / deployer can call
+    **/
+    function emergencyHalt() public halt(false) onlyDeployer() {
+        halted = true;
+    }
+
+    /**
+     * @notice re-activate contract 
+     * @dev    only the contract owner / deployer can call
+    **/
+    function restartContract() public halt(true) onlyDeployer() {
+        halted = false;
     }
 
 }

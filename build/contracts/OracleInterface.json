@@ -15,7 +15,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.15+commit.e14f2714\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"batchId\",\"type\":\"bytes32\"}],\"name\":\"requestData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/OracleInterface.sol\":\"OracleInterface\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/OracleInterface.sol\":{\"keccak256\":\"0x23a54356d56663ac7b650b52f2a5e14794e1b823756a4e7f834b83eee968d056\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://3e3a7e0611b2b6ddbd78b98701c7219ef5c29b7bc73c92927363b7ebc66e516e\",\"dweb:/ipfs/QmZsmRsSTPG2HtZUHn73ct7QhJ2g4MagFUM73TVPBqMs5u\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.15+commit.e14f2714\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"batchId\",\"type\":\"bytes32\"}],\"name\":\"requestData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/OracleInterface.sol\":\"OracleInterface\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/OracleInterface.sol\":{\"keccak256\":\"0xdb9ca93087c99e52a43e66c6366bf15738f13e121c88c68656123f38490d3016\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://75fdc19c6e53959ac57b5a5a9f88944f4f78311d2c06d9e656072ee3bc909911\",\"dweb:/ipfs/QmfGRvEQHPhQVpdsnMBxAbcdF4UstgX7zPkVvbWNCPt5yr\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -23,7 +23,7 @@
   "deployedGeneratedSources": [],
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "//SPDX-License-Identifier: UNLICENSED\n\n// CREDIT: https://github.com/COMP6452-UNSW/oracle_example/tree/master/smart_contracts (adapted from above git repo)\n \npragma solidity ^0.8.0;\n// contract that defines the interface to interact with oracle\ninterface OracleInterface {\n    function requestData(bytes32 batchId) external;\n}\n\n\n\n\n\n",
+  "source": "//SPDX-License-Identifier: UNLICENSED\n\n// CREDIT: https://github.com/COMP6452-UNSW/oracle_example/tree/master/smart_contracts (adapted from above git repo)\n \npragma solidity ^0.8.0;\n// contract that defines the interface to interact with oracle\ninterface OracleInterface {\n    function requestData(bytes32 batchId) external;\n}\n\n",
   "sourcePath": "/Users/dariaschumm/Library/Mobile Documents/com~apple~CloudDocs/6452/project_2/contracts/OracleInterface.sol",
   "ast": {
     "absolutePath": "project:/contracts/OracleInterface.sol",
@@ -123,7 +123,7 @@
         "usedErrors": []
       }
     ],
-    "src": "158:174:3"
+    "src": "158:170:3"
   },
   "compiler": {
     "name": "solc",
@@ -131,7 +131,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.8",
-  "updatedAt": "2022-07-22T22:07:04.695Z",
+  "updatedAt": "2022-07-23T00:37:17.713Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
