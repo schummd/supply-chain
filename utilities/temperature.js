@@ -1,14 +1,14 @@
 
 
-async function listener(oracleInstance, productInstance, oracleOwner, min, max) {
+// async function listener(oracleInstance, productInstance, oracleOwner, min, max) {
 
-    await oracleInstance.getPastEvents().then(async(ev) => {
-        await fetchTemperature(min, max).then(async(response) => {
-            await oracleInstance.replyTemp(ev[0].args[0], response, productInstance.address, { from: oracleOwner });
-        }); 
-    });
+//     await oracleInstance.getPastEvents().then(async(ev) => {
+//         await fetchTemperature(min, max).then(async(response) => {
+//             await oracleInstance.replyTemp(ev[0].args[0], response, productInstance.address, { from: oracleOwner });
+//         }); 
+//     });
 
-}
+// }
 
 async function fetchTemperature(min, max) {
     // fetch temperature 
@@ -25,4 +25,4 @@ async function fetchTemperature(min, max) {
 }
 
 
-module.exports = { listener, fetchTemperature }
+module.exports = { fetchTemperature }

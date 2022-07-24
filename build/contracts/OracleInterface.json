@@ -24,7 +24,7 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "//SPDX-License-Identifier: UNLICENSED\n\n// CREDIT: https://github.com/COMP6452-UNSW/oracle_example/tree/master/smart_contracts (adapted from above git repo)\n \npragma solidity ^0.8.0;\n// contract that defines the interface to interact with oracle\ninterface OracleInterface {\n    function requestData(bytes32 batchId) external;\n}\n\n",
-  "sourcePath": "/Users/dariaschumm/Library/Mobile Documents/com~apple~CloudDocs/6452/project_2/contracts/OracleInterface.sol",
+  "sourcePath": "/Users/dariaschumm/Library/Mobile Documents/com~apple~CloudDocs/6452/supply-chain/contracts/OracleInterface.sol",
   "ast": {
     "absolutePath": "project:/contracts/OracleInterface.sol",
     "exportedSymbols": {
@@ -131,7 +131,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.8",
-  "updatedAt": "2022-07-23T00:37:17.713Z",
+  "updatedAt": "2022-07-23T23:07:39.464Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

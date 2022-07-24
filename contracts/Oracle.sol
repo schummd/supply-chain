@@ -6,26 +6,25 @@ import "./OracleClient.sol";
 contract Oracle is OracleInterface {
     event request(bytes32 batchId, address caller);
 
-    address public trustedServer;
+    address public owner;
 
     // only get temperature from declared source
-    modifier trusted(address serverAddr) {
-        
-        require(serverAddr == trustedServer, 'data must come from the trusted source'); _;
+    modifier trusted(address _serverAddr) {
+        require(_serverAddr == owner, 'data must come from the trusted source'); _;
     }
 
-    constructor(address serverAddr) {
-        trustedServer = serverAddr;
+    constructor(address _owner) {
+        owner = _owner;
     }
 
     // emit a request for temperature data for the given batchId for the 
     // listener to hear
-    function requestData(bytes32 batchId) public override {
-        emit request(batchId, msg.sender);
+    function requestData(bytes32 _batchID) public override {
+        emit request(_batchID, msg.sender);
     }
     
     // send the data from the oracle to the client
-    function replyTemp(bytes32 batchId, uint256 data, address caller) public virtual trusted(msg.sender) returns (bool){
-        return TemperatureOracleClient(caller).receiveDataFromOracle(data, batchId);
+    function replyTemp(bytes32 _batchID, uint256 _data, address _caller) public virtual trusted(msg.sender) returns (bool){
+        return TemperatureOracleClient(_caller).receiveDataFromOracle(_data, _batchID);
     }
 }

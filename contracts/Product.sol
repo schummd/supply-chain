@@ -26,7 +26,7 @@ contract Product is TemperatureOracleClient {
     mapping (bytes32 => string) database;   // maps batchID to IPFS storage link 
     mapping (address => bool) producers;    // eligible producers to add products 
 
-    constructor(address oracleAddress, address _DOA, address payable _owner) TemperatureOracleClient(oracleAddress) {
+    constructor(address _oracle, address _DOA, address payable _owner) TemperatureOracleClient(_oracle) {
         DOA = _DOA; 
         owner = _owner; 
     }
@@ -88,8 +88,10 @@ contract Product is TemperatureOracleClient {
     **/
     function addCertificate(bytes32 _batchID, bytes32 _certificate, bytes memory _signature) public halt(false) onlyOwner(msg.sender, _batchID) {
         require(products[_batchID].producer == products[_batchID].owner, "producer of the batch is not the owner"); 
+        // require(verifyIssuer(recoverIssuer(_certificate, _signature)) == true, "certificate issued by unauthorised CA");
         products[_batchID].certificate = _certificate; 
         products[_batchID].signature = _signature; 
+        
     }
 
     /**
@@ -306,6 +308,15 @@ contract Product is TemperatureOracleClient {
     **/
     function restartContract() public halt(true) onlyDeployer() {
         halted = false;
+    }
+
+    /**
+     * @notice check whether the contract is on pause
+     * @dev    anyone can call the function
+     * @return bool true if contract paused, else false
+    **/
+    function checkHalt() public view returns(bool) {
+        return halted; 
     }
 
 }
