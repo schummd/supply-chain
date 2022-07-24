@@ -3,10 +3,9 @@ const Registry = artifacts.require("AuthorityRegistry");
 
 const assert = require("chai").assert;
 const truffleAssert = require('truffle-assertions');
-const timeMachine = require('ganache-time-traveler');
-
-const { authorityKeys, generateSignature, generateCertificate } = require('../utilities/certificate.js'); 
+const { authorityKeys, generateCertificate } = require('../utilities/certificate.js'); 
 const { initGlobalIpfs, loadIpfs, getIpfs } = require('../utilities/storage'); 
+const { fetchTemperature } = require('../utilities/temperature'); 
 
 contract('Product', (accounts) => {
 
@@ -21,7 +20,7 @@ contract('Product', (accounts) => {
     const DOA = accounts[9];            // certification registry owner 
 	const owner = accounts[0];          // contract owner 
 	const producer = accounts[1];       // batch producer
-	const distributor = accounts[2];    // batch distributor 
+	const distributor = accounts[2];    // distributor 
 
     // ------------------------------------------------------------------------------------------------
 

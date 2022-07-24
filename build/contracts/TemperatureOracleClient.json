@@ -35,7 +35,7 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "//SPDX-License-Identifier: UNLICENSED\n \npragma solidity ^0.8.0;\n\nimport \"./OracleInterface.sol\";\n\n\n//The abstract class for the temperature oracle client\nabstract contract TemperatureOracleClient {\n    address _oracleAddress;\n\n    constructor(address oracleAddress) {\n        _oracleAddress = oracleAddress;\n    } \n\n    // only the oracle should be able to update the data in the products contract\n    modifier oracleOnly(){\n        require(msg.sender == _oracleAddress, 'data must come from the oracle contract');\n        _;\n    }\n\n    // function to request the temperature from the oracle temperature source\n    // call request temperature for the given batch Id\n    function requestTemperatureFromOracle(bytes32 batchId) internal \n    {\n        // encode batch Id as data for the request\n        OracleInterface(_oracleAddress).requestData(batchId);\n    }\n\n    // receive the data for the given request ID\n    function receiveDataFromOracle(uint256 data, bytes32 batchId)\n    oracleOnly() public returns (bool) {\n        // convert bytes received into the received temperature and the \n        // batchId the temperature was requested for\n        return receiveTemperatureFromOracle(batchId, data);\n    }\n\n    // define what to do with the received temperature in the products contract\n    function receiveTemperatureFromOracle (\n        bytes32 batchId, uint256 recvdTemp)\n        internal virtual returns (bool);\n}",
-  "sourcePath": "/Users/dariaschumm/Library/Mobile Documents/com~apple~CloudDocs/6452/project_2/contracts/OracleClient.sol",
+  "sourcePath": "/Users/dariaschumm/Library/Mobile Documents/com~apple~CloudDocs/6452/supply-chain/contracts/OracleClient.sol",
   "ast": {
     "absolutePath": "project:/contracts/OracleClient.sol",
     "exportedSymbols": {
@@ -858,7 +858,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.8",
-  "updatedAt": "2022-07-23T00:37:17.712Z",
+  "updatedAt": "2022-07-23T23:07:39.463Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

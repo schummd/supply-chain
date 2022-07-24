@@ -1,0 +1,587 @@
+{
+	"compiler": {
+		"version": "0.8.7+commit.e28d00a7"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_oracle",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "_DOA",
+						"type": "address"
+					},
+					{
+						"internalType": "address payable",
+						"name": "_owner",
+						"type": "address"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "bytes32",
+						"name": "productID",
+						"type": "bytes32"
+					}
+				],
+				"name": "batchIdentifier",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "bool",
+						"name": "result",
+						"type": "bool"
+					}
+				],
+				"name": "compareTemperatureResult",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "_batchID",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "bytes32",
+						"name": "_certificate",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "bytes",
+						"name": "_signature",
+						"type": "bytes"
+					}
+				],
+				"name": "addCertificate",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_producer",
+						"type": "address"
+					}
+				],
+				"name": "addProducer",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "_data",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_temperature",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "_CID",
+						"type": "string"
+					}
+				],
+				"name": "addProduct",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "destroyContract",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "emergencyHalt",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "_batchID",
+						"type": "bytes32"
+					}
+				],
+				"name": "getCertificate",
+				"outputs": [
+					{
+						"internalType": "bytes32",
+						"name": "",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "bytes",
+						"name": "",
+						"type": "bytes"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "_batchID",
+						"type": "bytes32"
+					}
+				],
+				"name": "getDatabase",
+				"outputs": [
+					{
+						"internalType": "string",
+						"name": "",
+						"type": "string"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_producer",
+						"type": "address"
+					}
+				],
+				"name": "getProducer",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "_batchID",
+						"type": "bytes32"
+					}
+				],
+				"name": "getProduct",
+				"outputs": [
+					{
+						"internalType": "bytes32",
+						"name": "",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "_batchID",
+						"type": "bytes32"
+					}
+				],
+				"name": "getStatus",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "_batchID",
+						"type": "bytes32"
+					}
+				],
+				"name": "getTemperature",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "data",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bytes32",
+						"name": "batchId",
+						"type": "bytes32"
+					}
+				],
+				"name": "receiveDataFromOracle",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "restartContract",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "_batchID",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "bytes32",
+						"name": "_productHash",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "address",
+						"name": "_newOwner",
+						"type": "address"
+					}
+				],
+				"name": "updateOwner",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "_batchID",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "bool",
+						"name": "_status",
+						"type": "bool"
+					}
+				],
+				"name": "updateStatus",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "_batchID",
+						"type": "bytes32"
+					}
+				],
+				"name": "verifyCertificate",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "_batchID",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "bytes32",
+						"name": "_offchainHash",
+						"type": "bytes32"
+					}
+				],
+				"name": "verifyProductHash",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {
+				"addCertificate(bytes32,bytes32,bytes)": {
+					"details": "only the producer of the product can call ",
+					"params": {
+						"_batchID": "unique identifier of the batch ",
+						"_certificate": "certificate certifying product batch",
+						"_signature": "signature of the certificate issuer *"
+					}
+				},
+				"addProducer(address)": {
+					"details": "only contract owner can call ",
+					"params": {
+						"_producer": "batch producer address *"
+					}
+				},
+				"addProduct(bytes32,uint256,string)": {
+					"details": "only registered producer can call ",
+					"params": {
+						"_CID": "unique identifier of the off-chain storage*",
+						"_data": "product data hash ",
+						"_temperature": "stores required temperature"
+					}
+				},
+				"destroyContract()": {
+					"details": "only the contract owner / deployer can call*"
+				},
+				"emergencyHalt()": {
+					"details": "only the contract owner / deployer can call*"
+				},
+				"getCertificate(bytes32)": {
+					"details": "anyone can call function ",
+					"params": {
+						"_batchID": "unique batch ID to get the product "
+					},
+					"returns": {
+						"_0": "bytes32 batch certificate on-chain",
+						"_1": "bytes array of the issuer signature*"
+					}
+				},
+				"getDatabase(bytes32)": {
+					"details": "anyone can call function ",
+					"params": {
+						"_batchID": "unique batch ID to get the product "
+					},
+					"returns": {
+						"_0": "string unique IPFS storage identifier (CID)*"
+					}
+				},
+				"getProducer(address)": {
+					"details": "anyone can call function ",
+					"params": {
+						"_producer": "batch producer address "
+					},
+					"returns": {
+						"_0": "bool true if address is in mapping *"
+					}
+				},
+				"getProduct(bytes32)": {
+					"details": "anyone can call function ",
+					"params": {
+						"_batchID": "unique batch ID to get the product "
+					},
+					"returns": {
+						"_0": "bytes32 product hash stored on-chain ",
+						"_1": "address of the current owner of the batch *"
+					}
+				},
+				"getStatus(bytes32)": {
+					"details": "anyone can call function ",
+					"params": {
+						"_batchID": "unique batch ID to get the product "
+					},
+					"returns": {
+						"_0": "bool reads batch status *"
+					}
+				},
+				"restartContract()": {
+					"details": "only the contract owner / deployer can call*"
+				},
+				"updateOwner(bytes32,bytes32,address)": {
+					"details": "only the current owner of the product can call ",
+					"params": {
+						"_batchID": "unique identifier of the batch ",
+						"_newOwner": "address of a new batch owner *",
+						"_productHash": "hash of the product to verify"
+					}
+				},
+				"updateStatus(bytes32,bool)": {
+					"details": "only batch current owner can call ",
+					"params": {
+						"_batchID": "unique identifier of the batch ",
+						"_status": "new status of the batch *"
+					}
+				},
+				"verifyCertificate(bytes32)": {
+					"details": "anyone can call function ",
+					"params": {
+						"_batchID": "unique batch ID to get the product "
+					},
+					"returns": {
+						"_0": "bool if the issuer is registered with DOA, then          certificate is valid, otherwise returns false *"
+					}
+				},
+				"verifyProductHash(bytes32,bytes32)": {
+					"details": "anyone can call ",
+					"params": {
+						"_batchID": "unique identifier of the batch ",
+						"_offchainHash": "certificate certifying product batch"
+					},
+					"returns": {
+						"_0": "bool if the hash stored on-chain is the same as newly computed hash,         then product infromation is correct and has not been modified *"
+					}
+				}
+			},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {
+				"addCertificate(bytes32,bytes32,bytes)": {
+					"notice": "producer adds a certificate obtained from the          CA from off-chain, the producer has to be the          current batch owner to add certificate "
+				},
+				"addProducer(address)": {
+					"notice": "contract deployer adds authorised producer         to the mapping, which gives permissions to          add products and certificate "
+				},
+				"addProduct(bytes32,uint256,string)": {
+					"notice": "add product infromation to the data hash         and conditions hash generated from off-chain"
+				},
+				"destroyContract()": {
+					"notice": "deactivate contract "
+				},
+				"emergencyHalt()": {
+					"notice": "tempotarity deactivate contract "
+				},
+				"getCertificate(bytes32)": {
+					"notice": "get the product certificate and signer signature"
+				},
+				"getDatabase(bytes32)": {
+					"notice": "get the product off-chain storage location "
+				},
+				"getProducer(address)": {
+					"notice": "checks whether the producer address is         authorised to add product and certificate"
+				},
+				"getProduct(bytes32)": {
+					"notice": "get the product hash and owner by its unique ID"
+				},
+				"getStatus(bytes32)": {
+					"notice": "get status of the batch "
+				},
+				"restartContract()": {
+					"notice": "re-activate contract "
+				},
+				"updateOwner(bytes32,bytes32,address)": {
+					"notice": "transfer the ownership of the product batch, supported by          certificate verification and check of the product hash         that is stored on-chain and freshly computed one"
+				},
+				"updateStatus(bytes32,bool)": {
+					"notice": "lets a product owner to update product status          based on physical off-chain investigation"
+				},
+				"verifyCertificate(bytes32)": {
+					"notice": "based the product certificate and issuer signature         recovers the address of CA who signed the certificate         and verifies whether it is registered with DOA "
+				},
+				"verifyProductHash(bytes32,bytes32)": {
+					"notice": "allows to verify data in the off-chain data store about product"
+				}
+			},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/Product.sol": "Product"
+		},
+		"evmVersion": "london",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/CARegistry.sol": {
+			"keccak256": "0xb72eda38d5c07f03a1fa265c147c7b983b9817eac310346aba00d21667c84647",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://4f7ec300b70d760f08033d658b11b17c79a1bf59a120c7673c1356385cc8585d",
+				"dweb:/ipfs/QmeUxGMqevxh242sVBQv8HG8wGoeqjX4BpZynZMsXQ8t5W"
+			]
+		},
+		"contracts/OracleClient.sol": {
+			"keccak256": "0x21c0662c494625f8e8c6057e5df82a5df07222e1190d74cb867e3e28df03fb7f",
+			"license": "UNLICENSED",
+			"urls": [
+				"bzz-raw://9ea740d7de439929d82282b775bd6d8ac30f5fe887a4dd5d3379ad1c66f9c2d1",
+				"dweb:/ipfs/QmVviBEgGhSEJNDKsESGpQuPUYgg7yAwQ5V5BDqkuP9Yuj"
+			]
+		},
+		"contracts/OracleInterface.sol": {
+			"keccak256": "0xdb9ca93087c99e52a43e66c6366bf15738f13e121c88c68656123f38490d3016",
+			"license": "UNLICENSED",
+			"urls": [
+				"bzz-raw://75fdc19c6e53959ac57b5a5a9f88944f4f78311d2c06d9e656072ee3bc909911",
+				"dweb:/ipfs/QmfGRvEQHPhQVpdsnMBxAbcdF4UstgX7zPkVvbWNCPt5yr"
+			]
+		},
+		"contracts/Product.sol": {
+			"keccak256": "0x85fbcc5640feb08964f8fd43cf9a0788b4196493b1e4a6fbec3c636a0b66b4b9",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://97d37623d8abbcb3ee1061908d5287242ce1f4a79f008330954f0ccfcb554213",
+				"dweb:/ipfs/QmfBiSDRWvxD9ufsGiHny2kmzdNESv5xC4ZK3cVHLzntk6"
+			]
+		}
+	},
+	"version": 1
+}

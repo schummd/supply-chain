@@ -1,0 +1,147 @@
+{
+	"compiler": {
+		"version": "0.8.7+commit.e28d00a7"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "serverAddr",
+						"type": "address"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "bytes32",
+						"name": "batchId",
+						"type": "bytes32"
+					},
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "caller",
+						"type": "address"
+					}
+				],
+				"name": "request",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "batchId",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "uint256",
+						"name": "data",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "caller",
+						"type": "address"
+					}
+				],
+				"name": "replyTemp",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "batchId",
+						"type": "bytes32"
+					}
+				],
+				"name": "requestData",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "trustedServer",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/Oracle.sol": "Oracle"
+		},
+		"evmVersion": "london",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/Oracle.sol": {
+			"keccak256": "0xc516de259b9e55da6b2056d9a458531a2a9fcd0d1724f7dffc19ff382f427259",
+			"license": "UNLICENSED",
+			"urls": [
+				"bzz-raw://6480b98e0cdd74be6296f25b24592b247d866ac3acd9515a59d733f3c82c0689",
+				"dweb:/ipfs/QmNNji7Qw48erUoswVJsmeD7pka9uv91mnHNyR4a1u2nSA"
+			]
+		},
+		"contracts/OracleClient.sol": {
+			"keccak256": "0x21c0662c494625f8e8c6057e5df82a5df07222e1190d74cb867e3e28df03fb7f",
+			"license": "UNLICENSED",
+			"urls": [
+				"bzz-raw://9ea740d7de439929d82282b775bd6d8ac30f5fe887a4dd5d3379ad1c66f9c2d1",
+				"dweb:/ipfs/QmVviBEgGhSEJNDKsESGpQuPUYgg7yAwQ5V5BDqkuP9Yuj"
+			]
+		},
+		"contracts/OracleInterface.sol": {
+			"keccak256": "0xdb9ca93087c99e52a43e66c6366bf15738f13e121c88c68656123f38490d3016",
+			"license": "UNLICENSED",
+			"urls": [
+				"bzz-raw://75fdc19c6e53959ac57b5a5a9f88944f4f78311d2c06d9e656072ee3bc909911",
+				"dweb:/ipfs/QmfGRvEQHPhQVpdsnMBxAbcdF4UstgX7zPkVvbWNCPt5yr"
+			]
+		}
+	},
+	"version": 1
+}
