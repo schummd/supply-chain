@@ -1,5 +1,6 @@
 const Product = artifacts.require("Product");
 const Registry = artifacts.require("AuthorityRegistry");
+const Oracle = artifacts.require("Oracle");
 
 const assert = require("chai").assert;
 const truffleAssert = require('truffle-assertions');
@@ -22,21 +23,20 @@ contract('Product', (accounts) => {
 	const producer = accounts[1];       // batch producer
 	const distributor = accounts[2];    // distributor 
 
-    // ------------------------------------------------------------------------------------------------
-
-    it('Authority deploying CA registry contract', async () => {
+    before('Deploying contracts', async() => {
         registryInstance = await Registry.deployed(); 
-        await web3.eth.getBalance(registryInstance.address).then((balance) => {
+        oracleInstance = await Oracle.deployed(); 
+        productInstance = await Product.deployed();
+
+        console.log("\nContracts deployed and IPFS node initialised..."); 
+        await initGlobalIpfs();   // initiate a global IPFS node for user 
+
+        await web3.eth.getBalance(productInstance.address).then((balance) => {
 			assert.equal(balance, 0, "check balance of contract"); 
 		});
-    });
-    
-    it('Deploying product constract', async () => {
-		productInstance = await Product.deployed();
-		await web3.eth.getBalance(productInstance.address).then((balance) => {
-			assert.equal(balance, 0, "check balance of contract"); 
-		});
-	}); 
+    }); 
+
+    // ------------------------------------------------------------------------------------------------
 
     it('DOA adding a certifying authority to the registry', async() => {
         CA = await authorityKeys(); // generate random account keys 
@@ -68,13 +68,9 @@ contract('Product', (accounts) => {
             "description": "apples",
             "saleContract": "#4513404285"
         }
-        console.log(); 
-        // initiate a global node for user 
-        await initGlobalIpfs(); 
-        // store data of the product and get the CID
-        productCID = await loadIpfs(productInfo); 
-        // verify the data stored is correct in IPFS 
-        let retrieveData = await getIpfs(productCID); 
+
+        productCID = await loadIpfs(productInfo);       // store data of the product and get the CID
+        let retrieveData = await getIpfs(productCID);   // verify the data stored is correct in IPFS 
         assert.equal(JSON.stringify(productInfo), retrieveData, "the data stored on IPFS is the same"); 
     });
 
