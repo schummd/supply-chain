@@ -73,22 +73,20 @@ contract('Product', (accounts) => {
     it('Producer sending product batch data to the database', async() => {
         // database is imitated using a simple JSON object; assuming 
         // producer adds the product data though front-end interface
-        // sends it to the IPFS storage
-        productInfo = {
-            "barcode": "1845678901001",
-            "quantity": 1100,
-            "productName": "Gala Apples",
-            "produceDate": "01/01/2023",
-            "expiryDate": "20/01/2023",
-            "producer": "Sydney Orchard",
-            "location": "Newcastle, NSW",
-            "phone": "0403332323",
-            "email": "hello@sydneyorchard.com.au", 
-            "description": "apples",
-            "saleContract": "#4513404285"
-        }
-
-        productCID = await loadIpfs(productInfo);       // store data of the product and get the CID
+        // sends it to the IPFS storage, get back data object and CID
+        let sendData = await loadIpfs("1845678901001", 
+                                      1100, 
+                                      "Gala Apples", 
+                                      "01/01/2023", 
+                                      "20/01/2023", 
+                                      "Sydney Orchard", 
+                                      "Newcastle, NSW", 
+                                      "0403332323",
+                                      "hello@sydneyorchard.com.au",
+                                      "apples",
+                                      "#4513404285");       
+        productInfo = sendData[0]; 
+        productCID = sendData[1];
         let retrieveData = await getIpfs(productCID);   // verify the data stored is correct in IPFS 
         assert.equal(JSON.stringify(productInfo), retrieveData, "the data stored on IPFS is the same"); 
     });

@@ -66,20 +66,19 @@ contract('Product', (accounts) => {
         // database is imitated using a simple JSON object that stores the
         // infromation about the product; producer can add their own data 
         // and send it to the IPFS storage, which can be retrieved later on 
-        productOneInfo = {
-            "barcode": "7391413312094",
-            "quantity": 3200,
-            "productName": "Madagascar Bananas",
-            "produceDate": "24/11/2023",
-            "expiryDate": "30/12/2023",
-            "producer": "Fruits Orchard",
-            "location": "Newcastle, NSW",
-            "phone": "04222333990",
-            "email": "hello@fruitsorchard.com.au", 
-            "description": "bananas",
-            "saleContract": "#38850138"
-        }
-        productOneCID = await loadIpfs(productOneInfo);       // store data of the product and get the CID
+        let sendDataOne = await loadIpfs("7391413312094", 
+                                      3200, 
+                                      "Madagascar Bananas", 
+                                      "24/11/2023", 
+                                      "30/12/2023", 
+                                      "Fruits Orchard", 
+                                      "Newcastle, NSW", 
+                                      "0422233399",
+                                      "hello@fruitsorchard.com.au",
+                                      "bananas",
+                                      "#38850138876");       
+        productOneInfo = sendDataOne[0]; 
+        productOneCID = sendDataOne[1];
         let retrieveData = await getIpfs(productOneCID);   // verify the data stored is correct in IPFS 
         assert.equal(JSON.stringify(productOneInfo), retrieveData, "the data stored on IPFS is the same"); 
     });
@@ -88,20 +87,19 @@ contract('Product', (accounts) => {
         // database is imitated using a simple JSON object that stores the
         // infromation about the product; producer can add their own data 
         // and send it to the IPFS storage, which can be retrieved later on 
-        productTwoInfo = {
-            "barcode": "1845678901001",
-            "quantity": 1100,
-            "productName": "Gala Apples",
-            "produceDate": "01/01/2023",
-            "expiryDate": "20/01/2023",
-            "producer": "Sydney Orchard",
-            "location": "Newcastle, NSW",
-            "phone": "0403332323",
-            "email": "hello@sydneyorchard.com.au", 
-            "description": "apples",
-            "saleContract": "#4513404285"
-        }
-        productTwoCID = await loadIpfs(productTwoInfo);       // store data of the product and get the CID
+        let sendDataTwo = await loadIpfs("1845678901001", 
+                                         1100, 
+                                         "Gala Apples", 
+                                         "01/01/2023", 
+                                         "20/01/2023", 
+                                         "Sydney Orchard", 
+                                         "Newcastle, NSW", 
+                                         "0403332323",
+                                         "sales@sydneyorchard.com.au",
+                                         "apples",
+                                         "#524513404285");       
+        productTwoInfo = sendDataTwo[0]; 
+        productTwoCID = sendDataTwo[1];
         let retrieveData = await getIpfs(productTwoCID);   // verify the data stored is correct in IPFS 
         assert.equal(JSON.stringify(productTwoInfo), retrieveData, "the data stored on IPFS is the same"); 
     });

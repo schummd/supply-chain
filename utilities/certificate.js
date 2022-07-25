@@ -1,6 +1,5 @@
 const { assert } = require("chai");
 
-
 /**
  * Generates a random authority keys for testing 
  * @return {address} an address of the authority, ASIC can add to registry 

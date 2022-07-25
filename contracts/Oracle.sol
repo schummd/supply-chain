@@ -1,9 +1,12 @@
 //SPDX-License-Identifier: UNLICENSED
  
 pragma solidity ^0.8.0;
+
 import "./OracleClient.sol";
+
 // abstract class for oracle contract, which implements the oracle interface
 contract Oracle is OracleInterface {
+
     event request(bytes32 batchId, address caller);
 
     address public owner;
