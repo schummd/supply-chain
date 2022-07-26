@@ -13,6 +13,8 @@ contract('Product', (accounts) => {
 
     let CA;         
     let authorityAddress;               // CA's public key 
+    let product1Hash;
+    let string1CID;
 
     let status; 
     let newProductHash;                 // newly computed hash of the product 
@@ -112,10 +114,10 @@ contract('Product', (accounts) => {
         let retrieveData1 = await getIpfs(product1CID);
         let retrieveData2 = await getIpfs(product2CID); 
         // generate hash of the data 
-        let product1Hash = web3.utils.sha3(retrieveData1);
+        product1Hash = web3.utils.sha3(retrieveData1);
         let product2Hash = web3.utils.sha3(retrieveData2);
         let temperature = 8; 
-        let string1CID = product1CID.toString();
+        string1CID = product1CID.toString();
         let string2CID = product2CID.toString();
 
         // add a product to the contract 
@@ -204,6 +206,10 @@ contract('Product', (accounts) => {
         // // then recovers the product hash from the contract and compares 
         let onchainHash = await productInstance.getProduct.call(batchID1, { from: distributor }); 
         assert.equal(onchainHash[0], newProductHash, "check if newly computed product hash is the same as stored on-chain"); 
+
+        // assert the on chain hash of batch2 is not that of batch1
+        onchainHash = await productInstance.getProduct.call(batchID2, { from: distributor }); 
+        assert.notEqual(onchainHash[0], newProductHash, "check if newly computed product hash is the same as stored on-chain");
     }); 
 
     // the certificate is ligitimate and data off-chain has not been tampered 
@@ -220,11 +226,51 @@ contract('Product', (accounts) => {
         await truffleAssertions.fails(productInstance.updateOwner(batchID1, newProductHash, distributor, { from: producer2 }));
     }); 
 
-    it('Wrong product transferring ownership to the distributor', async() => {
+    it('Wrong producer transferring ownership to the distributor', async() => {
         // producer1 transfer ownership of the product2 to the distributor
         // it should be return false only owner can call this function
         await truffleAssertions.fails(productInstance.updateOwner(batchID2, newProductHash, distributor, { from: producer2 }));
     });
+
+    it('Producer owning two products on chain', async() => {
+        sendProduct3 = await loadIpfs("3690278390461", // barcode
+        2000,               // quantity
+        "Grapes",      // productName
+        "04/01/2023",       // produceDate
+        "31/01/2023",       // expiryDate
+        "Schofields Orchard",   // producer
+        "Richmond, NSW",   // location
+        "0411119701",       // phone
+        "schosons@bigpond.com",   // email
+        "oranges",           // description
+        "#4513404337");     // saleContract
+        // productInfo = sendProduct1[0]
+        product3CID = sendProduct3[1]; 
+        // generate hash of the data 
+        let retrievedData3 = await getIpfs(product3CID); 
+        assert.equal(JSON.stringify(sendProduct3[0]), retrievedData3, "the data stored on IPFS is the same");
+        let product3Hash = web3.utils.sha3(retrievedData3);
+        let temperature = 8; 
+        let string3CID = product3CID.toString();
+
+        // add a product to the contract 
+        await productInstance.addProduct(product3Hash, temperature, string3CID, { from: producer1 })
+        await productInstance.getPastEvents().then((ev) => batchID3 = ev[0].args[0]);
+
+        // get the product infromation 
+        let checkProduct3 = await productInstance.getProduct(batchID3); 
+        // check if the data is correct 
+        assert.equal(checkProduct3[0], product3Hash, "check the supplied product hash is the same as stored"); 
+        // assert producer owns product 3 and product 1 now
+        assert.equal(checkProduct3[1], producer1, "check the owner is the same who transacted"); 
+
+        let checkProduct1 = await productInstance.getProduct(batchID1); 
+        assert.equal(checkProduct1[1], producer1, "check the owner is the same who transacted"); 
+
+        // every batch id is unique
+        assert.isTrue(batchID1 != batchID2 != batchID3);
+    }); 
+
 
     it('Producer transferring ownership of product1 to the distributor', async() => {
         await productInstance.updateOwner(batchID1, newProductHash, distributor, { from: producer1 }); 
