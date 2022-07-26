@@ -230,6 +230,10 @@ contract('Product', (accounts) => {
         await productInstance.updateOwner(batchID1, newProductHash, distributor, { from: producer1 }); 
         let checkOnwer = await productInstance.getProduct.call(batchID1, { from: distributor }); 
         assert.equal(checkOnwer[1], distributor, "check if the current owner is the distributor"); 
+
+        // assert this does not affect product 2 ownership
+        let checkOnwer2 = await productInstance.getProduct.call(batchID2, { from: distributor }); 
+        assert.equal(checkOnwer2[1], producer2, "the ownership should not have changed for batch2"); 
     }); 
 
     // ------------------------------------------------------------------------------------------------
@@ -253,3 +257,6 @@ contract('Product', (accounts) => {
         status = await productInstance.getStatus.call(batchID1);
         assert.isFalse(status, "check if status is false");
     });
+
+
+});
