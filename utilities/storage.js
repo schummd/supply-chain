@@ -18,15 +18,29 @@ async function initGlobalIpfs() {
  * @param  {object} _data added by the producer though front-end 
  * @return {object} unique identifier of the data in IPFS storage 
  */
-async function loadIpfs(_data) {
-    const data = JSON.stringify(_data); 
+async function loadIpfs(_barcode, _quantity, _name, _produced, _expiry, _producer, _location, _phone, _email, _description, _contract) {
+    // stores the received data as JSON object 
+    product = {
+        "barcode": _barcode,
+        "quantity": _quantity,
+        "productName": _name,
+        "produceDate": _produced,
+        "expiryDate": _expiry,
+        "producer": _producer,
+        "location": _location,
+        "phone": _phone,
+        "email": _email, 
+        "description": _description,
+        "saleContract": _contract
+    }
+    const data = JSON.stringify(product); 
     // load the data to IPFS storage 
     const file = await node.add(data); 
     // unique ID of the product data
     const cid = file.cid; 
-    console.log(); 
+    // console.log(); 
     // return the identifier to producer
-    return cid; 
+    return [product, cid]; 
 }
 
 
@@ -49,4 +63,12 @@ async function getIpfs(_CID) {
 }
 
 
-module.exports = { initGlobalIpfs, loadIpfs, getIpfs }
+/**
+ * Shutdown the running IPFS node when called
+ **/
+async function stopIpfs() {
+    await node.stop(); 
+}
+
+
+module.exports = { initGlobalIpfs, loadIpfs, getIpfs, stopIpfs }

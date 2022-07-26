@@ -53,6 +53,19 @@
 				"type": "event"
 			},
 			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "bytes32",
+						"name": "_batchID",
+						"type": "bytes32"
+					}
+				],
+				"name": "temperatureReq",
+				"type": "event"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "bytes32",
@@ -109,6 +122,19 @@
 				"name": "addProduct",
 				"outputs": [],
 				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "checkHalt",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -389,6 +415,12 @@
 						"_temperature": "stores required temperature"
 					}
 				},
+				"checkHalt()": {
+					"details": "anyone can call the function",
+					"returns": {
+						"_0": "bool true if contract paused, else false*"
+					}
+				},
 				"destroyContract()": {
 					"details": "only the contract owner / deployer can call*"
 				},
@@ -440,6 +472,12 @@
 					},
 					"returns": {
 						"_0": "bool reads batch status *"
+					}
+				},
+				"getTemperature(bytes32)": {
+					"details": "anyone can call function ",
+					"params": {
+						"_batchID": "unique batch ID to get the product *"
 					}
 				},
 				"restartContract()": {
@@ -494,6 +532,9 @@
 				"addProduct(bytes32,uint256,string)": {
 					"notice": "add product infromation to the data hash         and conditions hash generated from off-chain"
 				},
+				"checkHalt()": {
+					"notice": "check whether the contract is on pause"
+				},
 				"destroyContract()": {
 					"notice": "deactivate contract "
 				},
@@ -514,6 +555,9 @@
 				},
 				"getStatus(bytes32)": {
 					"notice": "get status of the batch "
+				},
+				"getTemperature(bytes32)": {
+					"notice": "request temperature from the oracle "
 				},
 				"restartContract()": {
 					"notice": "re-activate contract "
@@ -559,27 +603,27 @@
 			]
 		},
 		"contracts/OracleClient.sol": {
-			"keccak256": "0x21c0662c494625f8e8c6057e5df82a5df07222e1190d74cb867e3e28df03fb7f",
+			"keccak256": "0xb30ce7a89290ab439f67123bdbdc087a32b83b53777e8f8cb96e7a9a02e6cbdc",
 			"license": "UNLICENSED",
 			"urls": [
-				"bzz-raw://9ea740d7de439929d82282b775bd6d8ac30f5fe887a4dd5d3379ad1c66f9c2d1",
-				"dweb:/ipfs/QmVviBEgGhSEJNDKsESGpQuPUYgg7yAwQ5V5BDqkuP9Yuj"
+				"bzz-raw://4f6ac89e9123b443bb5b2175d507e74cca8087f7b82ba62533900805171b9363",
+				"dweb:/ipfs/QmRywgtJh1THFBrL9Vavv1conpuAFDP21aVXfaLgXZ4rUm"
 			]
 		},
 		"contracts/OracleInterface.sol": {
-			"keccak256": "0xdb9ca93087c99e52a43e66c6366bf15738f13e121c88c68656123f38490d3016",
+			"keccak256": "0xee5af48b2dc39252e794be24747020749edc7dcefa0c3a9b5a79988476741838",
 			"license": "UNLICENSED",
 			"urls": [
-				"bzz-raw://75fdc19c6e53959ac57b5a5a9f88944f4f78311d2c06d9e656072ee3bc909911",
-				"dweb:/ipfs/QmfGRvEQHPhQVpdsnMBxAbcdF4UstgX7zPkVvbWNCPt5yr"
+				"bzz-raw://61b9d0bbdfb9a5664d6cdb9003efc776db4dfa3dc63de23ed6b37dca6979586a",
+				"dweb:/ipfs/QmbyTS9orR1BWwK9MEYuFa32ZZks3pK5Hu5x9BDGbF7vtx"
 			]
 		},
 		"contracts/Product.sol": {
-			"keccak256": "0x85fbcc5640feb08964f8fd43cf9a0788b4196493b1e4a6fbec3c636a0b66b4b9",
+			"keccak256": "0xd39b0701df8a46530d628e06f0459e10d76fe13a648a5a44acbd19158e837865",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://97d37623d8abbcb3ee1061908d5287242ce1f4a79f008330954f0ccfcb554213",
-				"dweb:/ipfs/QmfBiSDRWvxD9ufsGiHny2kmzdNESv5xC4ZK3cVHLzntk6"
+				"bzz-raw://d3c163c031d2c8c41219649caea83f15a72be6e6c476a77742cf212d0794b454",
+				"dweb:/ipfs/QmZFEvzJ2RwHaqFpDn7q2tGDDbsmG7ctM7NHtC51XXiqwt"
 			]
 		}
 	},

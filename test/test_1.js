@@ -1,10 +1,11 @@
 const Product = artifacts.require("Product");
 const Registry = artifacts.require("AuthorityRegistry");
+const Oracle = artifacts.require("Oracle");
 
 const assert = require("chai").assert;
 const truffleAssert = require('truffle-assertions');
 const { authorityKeys, generateCertificate } = require('../utilities/certificate.js'); 
-const { initGlobalIpfs, loadIpfs, getIpfs } = require('../utilities/storage'); 
+const { initGlobalIpfs, loadIpfs, getIpfs, stopIpfs } = require('../utilities/storage'); 
 const { fetchTemperature } = require('../utilities/temperature'); 
 
 contract('Product', (accounts) => {
@@ -21,31 +22,42 @@ contract('Product', (accounts) => {
 	const owner = accounts[0];          // contract owner 
 	const producer = accounts[1];       // batch producer
 	const distributor = accounts[2];    // distributor 
+    const oracle = accounts[8];         // oracle owner 
+
+    let registryInstance;
+    let oracleInstance; 
+    let productInstance; 
+
+    before('Deploying contracts', async() => {
+        registryInstance = await Registry.deployed(); 
+        oracleInstance = await Oracle.deployed(); 
+        productInstance = await Product.deployed();
+
+        console.log("\nContracts deployed and IPFS node initialised..."); 
+        await initGlobalIpfs();   // initiate a global IPFS node for user 
+        console.log(); 
+
+        await web3.eth.getBalance(productInstance.address).then((balance) => {
+			assert.equal(balance, 0, "check balance of contract"); 
+		});
+    }); 
+
+    after('Closing IPFS node', async() => {
+        await stopIpfs(); 
+    })
 
     // ------------------------------------------------------------------------------------------------
 
-    it('Authority deploying CA registry contract', async () => {
-        registryInstance = await Registry.deployed(); 
-        await web3.eth.getBalance(registryInstance.address).then((balance) => {
-			assert.equal(balance, 0, "check balance of contract"); 
-		});
-    });
-    
-    it('Deploying product constract', async () => {
-		productInstance = await Product.deployed();
-		await web3.eth.getBalance(productInstance.address).then((balance) => {
-			assert.equal(balance, 0, "check balance of contract"); 
-		});
-	}); 
-
     it('DOA adding a certifying authority to the registry', async() => {
         CA = await authorityKeys(); // generate random account keys 
-        authorityAddress = CA[0];	// certifying authority public key
+        authorityAddress = CA[0];	// certifying authority public key 
         await registryInstance.addPublicKey(authorityAddress, { from: DOA }); 
         let check = await registryInstance.checkPublicKey(authorityAddress); 
         assert.isTrue(check, "check if public key was added"); 
+        
+        // console.log("    > certifying authority address:", authorityAddress);
     });
-
+    
     // ------------------------------------------------------------------------------------------------
     // producer adds data about the batch he produced to the off-chain 
     // IPFS storage, sends the JSON object to the distributed file system; 
@@ -55,27 +67,23 @@ contract('Product', (accounts) => {
         // database is imitated using a simple JSON object that stores the
         // infromation about the product; producer can add their own data 
         // and send it to the IPFS storage, which can be retrieved later on 
-        productInfo = {
-            "barcode": "1845678901001",
-            "quantity": 1100,
-            "productName": "Gala Apples",
-            "produceDate": "01/01/2023",
-            "expiryDate": "20/01/2023",
-            "producer": "Sydney Orchard",
-            "location": "Newcastle, NSW",
-            "phone": "0403332323",
-            "email": "hello@sydneyorchard.com.au", 
-            "description": "apples",
-            "saleContract": "#4513404285"
-        }
-        console.log(); 
-        // initiate a global node for user 
-        await initGlobalIpfs(); 
-        // store data of the product and get the CID
-        productCID = await loadIpfs(productInfo); 
-        // verify the data stored is correct in IPFS 
-        let retrieveData = await getIpfs(productCID); 
+        let sendData = await loadIpfs("1845678901001", 
+                                      1100, 
+                                      "Gala Apples", 
+                                      "01/01/2023", 
+                                      "20/01/2023", 
+                                      "Sydney Orchard", 
+                                      "Newcastle, NSW", 
+                                      "0403332323",
+                                      "hello@sydneyorchard.com.au",
+                                      "apples",
+                                      "#4513404285");       
+        productInfo = sendData[0]; 
+        productCID = sendData[1];
+        let retrieveData = await getIpfs(productCID);   // verify the data stored is correct in IPFS 
         assert.equal(JSON.stringify(productInfo), retrieveData, "the data stored on IPFS is the same"); 
+        
+        // console.log("    > product IPFS CID:", productCID);
     });
 
     it('Contract owner authorising producer', async() => {
@@ -103,6 +111,10 @@ contract('Product', (accounts) => {
         assert.equal(checkProduct[0], productHash, "check the supplied product hash is the same as stored"); 
         // assert.equal(checkProduct[1], conditionsHash, "check the supplied conditions hash is the same as stored"); 
         assert.equal(checkProduct[1], producer, "check the owner is the same who transacted"); 
+
+        // console.log("    > product IPFS CID:", productCID); 
+        // console.log("    > retrieved data from IPFS:", retrieveData); 
+        // console.log("    > product data hash:", productHash); 
     }); 
 
     // producer can request a certifying authority to issue oragnic certificate 
@@ -129,6 +141,24 @@ contract('Product', (accounts) => {
         let returnedSignature = response[1]; 
         assert.equal(certificate, returnedCertificate, "check the certificated stored is the same"); 
         assert.equal(signature, returnedSignature, "check the signature stored is the same"); 
+
+        // console.log("    > certificate for the batch:", certificate);
+        // console.log("    > issuer signature:", signature); 
+    });
+
+    // ------------------------------------------------------------------------------------------------
+
+    it('Oracle requesting temperature, it is as required', async() => {
+        await productInstance.getTemperature(batchID, { from: producer }).then(async() => {
+            await oracleInstance.getPastEvents('request').then(async(ev) => {
+                await fetchTemperature(1, 5).then(async(response) => {
+                    await oracleInstance.replyTemp(ev[0].args[0], response, productInstance.address, { from: oracle });
+                }); 
+            }); 
+        });
+        // verify status was changed because temperature is too high 
+        let status = await productInstance.getStatus.call(batchID);
+        assert.isTrue(status, "check if status is true");
     });
 
     // ------------------------------------------------------------------------------------------------
@@ -155,6 +185,8 @@ contract('Product', (accounts) => {
         // // then recovers the product hash from the contract and compares 
         let onchainHash = await productInstance.getProduct.call(batchID, { from: distributor }); 
         assert.equal(onchainHash[0], newProductHash, "check if newly computed product hash is the same as stored on-chain"); 
+    
+        // console.log("    > generate new hash of data:", newProductHash); 
     }); 
 
     // the certificate is ligitimate and data off-chain has not been tampered 

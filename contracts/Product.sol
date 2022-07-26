@@ -7,19 +7,19 @@ import "./OracleClient.sol";
 contract Product is TemperatureOracleClient {
 
     bool internal halted;
-    bool internal locked;               // lock for payments (not sure if necessary yet)
-    address payable owner;              // owner of this contract (who deployed)
-    address DOA;                        // Department of Agriculture contract address 
+    bool internal locked;                   // lock for payments (not sure if necessary yet)
+    address payable owner;                  // owner of this contract (who deployed)
+    address DOA;                            // Department of Agriculture contract address 
     uint256 recvdTemp;
 
-    struct Batch {                      // keeps the hash of product data and conditions 
-        bytes32 productHash;            // hash of the data stored off-chain 
-        bytes32 certificate;            // organic product certification 
-        bytes signature;                // created with web3.eth.sign(), bytes by issuer 
-        address owner;                  // current owner of the product batch 
-        address producer;               // who produced the batch 
-        uint256 temperature;            // required temp of the product as provided in required conitions
-        bool status;                    // the status of the product, true means ok - not sure if needed
+    struct Batch {                          // keeps the hash of product data and conditions 
+        bytes32 productHash;                // hash of the data stored off-chain 
+        bytes32 certificate;                // organic product certification 
+        bytes signature;                    // created with web3.eth.sign(), bytes by issuer 
+        address owner;                      // current owner of the product batch 
+        address producer;                   // who produced the batch 
+        uint256 temperature;                // required temp of the product as provided in required conitions
+        bool status;                        // the status of the product, true means ok - not sure if needed
     }
     
     mapping (bytes32 => Batch) products;    // maps each product ID to a product data   
@@ -67,7 +67,7 @@ contract Product is TemperatureOracleClient {
      * @param  _CID unique identifier of the off-chain storage
     **/
     function addProduct(bytes32 _data, uint256 _temperature, string memory _CID) public halt(false) onlyProducer(msg.sender) {
-        bytes32 batchID = bytes32(keccak256(abi.encodePacked(_data))); 
+        bytes32 batchID = bytes32(keccak256(abi.encodePacked(_data, _CID))); 
         products[batchID].productHash = _data; 
         products[batchID].owner = msg.sender; 
         products[batchID].producer = msg.sender;
@@ -106,6 +106,7 @@ contract Product is TemperatureOracleClient {
     function updateOwner(bytes32 _batchID, bytes32 _productHash, address _newOwner) public halt(false) onlyOwner(msg.sender, _batchID) {
         require(verifyProductHash(_batchID, _productHash) == true, "product hash verification failed"); 
         require(verifyCertificate(_batchID) == true, "certificate verification failed");
+        require(products[_batchID].status == true, "status is not good"); 
         products[_batchID].owner = _newOwner; 
     }
 
@@ -192,16 +193,25 @@ contract Product is TemperatureOracleClient {
 
     /* ORACLE FUNCTIONS -------------------------------------------------------------------- */
 
-    // function to request the temperature from the oracle for a 
-    // given batchId
-    // send a request to the oracle for the temperature
+    /**
+     * @notice request temperature from the oracle 
+     * @dev    anyone can call function 
+     * @param  _batchID unique batch ID to get the product 
+    **/
     function getTemperature(bytes32 _batchID) public {
         requestTemperatureFromOracle(_batchID);
     }
 
     // receive the reply from the oracle
+    // this will check received temp against required temp in products 
+    /**
+     * @notice receive temperature from the oracle 
+     * @dev    oracle calls this function 
+     * @param  _batchID unique batch ID to get the product 
+     * @param  _recvdTemp temperature returned from oracle 
+     * @return bool true if the temperature as expected 
+    **/
     function receiveTemperatureFromOracle(bytes32 _batchID, uint256 _recvdTemp) internal override returns(bool) {
-        // this will check received temp against required temp in products 
         return compareTemperature(_batchID, _recvdTemp);
     }
 

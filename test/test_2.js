@@ -7,7 +7,7 @@ const truffleAssert = require('truffle-assertions');
 const assert = require("chai").assert;
 const truffleAssertions = require("truffle-assertions");
 const { authorityKeys, generateCertificate } = require('../utilities/certificate.js'); 
-const { initGlobalIpfs, loadIpfs, getIpfs } = require('../utilities/storage'); 
+const { initGlobalIpfs, loadIpfs, getIpfs, stopIpfs } = require('../utilities/storage'); 
 const { fetchTemperature } = require('../utilities/temperature'); 
 
 contract('Product', (accounts) => {
@@ -37,11 +37,16 @@ contract('Product', (accounts) => {
 
         console.log("\nContracts deployed and IPFS node initialised..."); 
         await initGlobalIpfs();   // initiate a global IPFS node for user 
+        console.log();
 
         await web3.eth.getBalance(productInstance.address).then((balance) => {
 			assert.equal(balance, 0, "check balance of contract"); 
 		});
     }); 
+
+    after('Closing IPFS node', async() => {
+        await stopIpfs(); 
+    })
 
     // ------------------------------------------------------------------------------------------------
 
@@ -66,20 +71,19 @@ contract('Product', (accounts) => {
         // database is imitated using a simple JSON object that stores the
         // infromation about the product; producer can add their own data 
         // and send it to the IPFS storage, which can be retrieved later on 
-        productOneInfo = {
-            "barcode": "7391413312094",
-            "quantity": 3200,
-            "productName": "Madagascar Bananas",
-            "produceDate": "24/11/2023",
-            "expiryDate": "30/12/2023",
-            "producer": "Fruits Orchard",
-            "location": "Newcastle, NSW",
-            "phone": "04222333990",
-            "email": "hello@fruitsorchard.com.au", 
-            "description": "bananas",
-            "saleContract": "#38850138"
-        }
-        productOneCID = await loadIpfs(productOneInfo);       // store data of the product and get the CID
+        let sendDataOne = await loadIpfs("7391413312094", 
+                                      3200, 
+                                      "Madagascar Bananas", 
+                                      "24/11/2023", 
+                                      "30/12/2023", 
+                                      "Fruits Orchard", 
+                                      "Newcastle, NSW", 
+                                      "0422233399",
+                                      "hello@fruitsorchard.com.au",
+                                      "bananas",
+                                      "#38850138876");       
+        productOneInfo = sendDataOne[0]; 
+        productOneCID = sendDataOne[1];
         let retrieveData = await getIpfs(productOneCID);   // verify the data stored is correct in IPFS 
         assert.equal(JSON.stringify(productOneInfo), retrieveData, "the data stored on IPFS is the same"); 
     });
@@ -88,20 +92,19 @@ contract('Product', (accounts) => {
         // database is imitated using a simple JSON object that stores the
         // infromation about the product; producer can add their own data 
         // and send it to the IPFS storage, which can be retrieved later on 
-        productTwoInfo = {
-            "barcode": "1845678901001",
-            "quantity": 1100,
-            "productName": "Gala Apples",
-            "produceDate": "01/01/2023",
-            "expiryDate": "20/01/2023",
-            "producer": "Sydney Orchard",
-            "location": "Newcastle, NSW",
-            "phone": "0403332323",
-            "email": "hello@sydneyorchard.com.au", 
-            "description": "apples",
-            "saleContract": "#4513404285"
-        }
-        productTwoCID = await loadIpfs(productTwoInfo);       // store data of the product and get the CID
+        let sendDataTwo = await loadIpfs("1845678901001", 
+                                         1100, 
+                                         "Gala Apples", 
+                                         "01/01/2023", 
+                                         "20/01/2023", 
+                                         "Sydney Orchard", 
+                                         "Newcastle, NSW", 
+                                         "0403332323",
+                                         "sales@sydneyorchard.com.au",
+                                         "apples",
+                                         "#524513404285");       
+        productTwoInfo = sendDataTwo[0]; 
+        productTwoCID = sendDataTwo[1];
         let retrieveData = await getIpfs(productTwoCID);   // verify the data stored is correct in IPFS 
         assert.equal(JSON.stringify(productTwoInfo), retrieveData, "the data stored on IPFS is the same"); 
     });
@@ -163,7 +166,6 @@ contract('Product', (accounts) => {
         assert.isFalse(verification, "batch certificate was signed by a valid authority"); 
     }); 
 
-
     // ------------------------------------------------------------------------------------------------
 
     it('Producer #2 adding product to the product contract', async() => {
@@ -194,85 +196,24 @@ contract('Product', (accounts) => {
         assert.equal(response[0], certificate, "check the certificated stored is the same"); 
         assert.equal(response[1], signature, "check the signature stored is the same"); 
     });
+    
+    it('Retailer verifies off-chain data with on-chain data hash', async() => {
+        let storageCID = await productInstance.getDatabase.call(batchIDTwo, { from: retailer });
+        let retrievedData = await getIpfs(storageCID);          // then recovers actual product data from IPFS 
+        let newProductHash = web3.utils.sha3(retrievedData);    // then computes hash of the received data 
 
-    it('Producer #2 modifies the product but does not update hash on-chain', async() => {
-        // producer updates the json object stored on IPFS 
-        
-        modifiedInfo = {
-            "barcode": "1845678901001",
-            "quantity": 1100,
-            "productName": "Gala Apples",
-            "produceDate": "30/11/2022",
-            "expiryDate": "20/12/2022",
-            "producer": "Sydney Orchard",
-            "location": "Newcastle, NSW",
-            "phone": "0403332323",
-            "email": "hello@sydneyorchard.com.au", 
-            "description": "apples",
-            "saleContract": "#4513404285"
-        }
-        let productCIDModified = await loadIpfs(modifiedInfo);       // store data of the product and get the CID
-        let retrieveData = await getIpfs(productCIDModified);   // verify the data stored is correct in IPFS 
-        assert.equal(JSON.stringify(modifiedInfo), retrieveData, "the data stored on IPFS is the same"); 
-    });
-
-    it('Retailer attempting to verify the product hash, but it was modified', async() => {
-        
+        let onchainHash = await productInstance.getProduct.call(batchIDTwo, { from: retailer }); 
+        assert.equal(onchainHash[0], newProductHash, "check if newly computed product hash is the same as stored on-chain"); 
     }); 
 
-    // it('Someone verifying a product that has been tampered with', async() => {
-    //     // modified off-chain data 
-    //     modifiedProductInfo = {
-    //         "barcode": "7391413312094",
-    //         "quantity": 3200,
-    //         "productName": "Madagascar Bananas",
-    //         "produceDate": "24/11/2023",
-    //         "expiryDate": "15/02/2023",
-    //         "producer": "Fruits Orchard",
-    //         "location": "Newcastle, NSW",
-    //         "phone": "04222333990",
-    //         "email": "hello@adversary.com.au", 
-    //         "description": "bananas",
-    //         "saleContract": "#38850138"
-    //     }
-    //     // hash the modified data and try to verify 
-    //     let incorrectProductHash = web3.utils.sha3(modifiedProductInfo.toString());
-    //     let prodVerify = await productInstance.verifyProductHash.call(batchID, incorrectProductHash, { from: thirdParty });
-    //     assert.isFalse(prodVerify, 'The product was verified when it should not have been')
-    // });
+    it('Retailer purchasing the batch and becoming a new owner', async() => {
+        let storageCID = await productInstance.getDatabase.call(batchIDTwo, { from: retailer });
+        let retrievedData = await getIpfs(storageCID);          // then recovers actual product data from IPFS 
+        let newProductHash = web3.utils.sha3(retrievedData);    // then computes hash of the received data 
 
-    // it('Someone verifying a certificate', async() => {
-    //     let certVerify = await productInstance.verifyCertificate(batchID, { from: thirdParty });
-    //     assert.isTrue(certVerify, 'The certificate could not be verified')
-    // });
-    
-    // it('Someone getting the ownership of product after verification', async() => {
-    //     let storageCID = await productInstance.getDatabase.call(batchID, { from: thirdParty });
-    //     // then recovers actual product data from IPFS 
-    //     let retrievedData = await getIpfs(storageCID); 
-    //     // then computes hash of the received data 
-    //     let newProductHash = web3.utils.sha3(retrievedData);
+        await productInstance.updateOwner(batchIDTwo, newProductHash, retailer, { from: producerTwo }); 
+        let checkOnwer = await productInstance.getProduct.call(batchIDTwo, { from: retailer }); 
+        assert.equal(checkOnwer[1], retailer, "check if the current owner is the distributor"); 
+    });
 
-    //     await productInstance.updateOwner(batchID, newProductHash, newOwner, { from: producer });
-    //     let productDetails = await productInstance.getProduct(batchID);
-    //     // console.log(productDetails); 
-    //     assert.equal(productDetails[1], newOwner, "ownership was not correctly updated");
-    // });
-
-    // it('Producer attempting to update certificate after selling', async() => {
-    //     let certData = await generateCertificate(batchID, CA[1]); 
-    //     let certificate = certData[0];
-    //     let signature = certData[1]; 
-    //     await truffleAssert.reverts(
-    //         (productInstance.addCertificate(batchID, certificate, signature, { from: producer })), 
-    //         "only owner can call this function"
-    //     );
-    // });
-
-    // Tests for multiple products on the supply chain
-
-    // owner of one product cannot update data of another product
-
-    // registered and selected CA cannot update data of another product
-
-})
+});
