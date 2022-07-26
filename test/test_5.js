@@ -5,19 +5,16 @@ const Oracle = artifacts.require("Oracle");
 const assert = require("chai").assert;
 const truffleAssertions = require("truffle-assertions");
 const { authorityKeys, generateCertificate } = require('../utilities/certificate.js'); 
-const { initGlobalIpfs, loadIpfs, getIpfs } = require('../utilities/storage'); 
+const { initGlobalIpfs, loadIpfs, getIpfs, stopIpfs } = require('../utilities/storage'); 
 const { fetchTemperature } = require('../utilities/temperature'); 
 
 
 contract('Product', (accounts) => {
 
     let CA;         
-    let batchID; 
     let authorityAddress;               // CA's public key 
 
     let status; 
-    let productInfo;                    // producer's product data 
-    let productCID;                     // keeps the ID of the product in IPFS
     let newProductHash;                 // newly computed hash of the product 
 
     const DOA = accounts[9];            // certification registry owner 
@@ -45,6 +42,9 @@ contract('Product', (accounts) => {
 		});
     }); 
 
+    after('Closing IPFS node', async() => {
+        await stopIpfs(); 
+    })
     // ------------------------------------------------------------------------------------------------ 
 
     it('DOA adding a certifying authority to the registry', async() => {
@@ -63,42 +63,38 @@ contract('Product', (accounts) => {
     it('Producers sending two product data to the database', async() => {
         // database is imitated using a simple JSON object that stores the
         // infromation about the product; producer can add their own data 
-        // and send it to the IPFS storage, which can be retrieved later on 
-        product1Info = {
-            "barcode": "1845678901001",
-            "quantity": 1100,
-            "productName": "Gala Apples",
-            "produceDate": "01/01/2023",
-            "expiryDate": "20/01/2023",
-            "producer": "Sydney Orchard",
-            "location": "Newcastle, NSW",
-            "phone": "0403332323",
-            "email": "hello@sydneyorchard.com.au", 
-            "description": "apples",
-            "saleContract": "#4513404285"
-        }
-        product2Info = {
-            "barcode": "3690278390461",
-            "quantity": 2000,
-            "productName": "Orange(Navel)",
-            "produceDate": "04/01/2023",
-            "expiryDate": "31/01/2023",
-            "producer": "Schofields Orchard",
-            "location": "Richmond, NSW",
-            "phone": "0411119701",
-            "email": "schosons@bigpond.com", 
-            "description": "oranges",
-            "saleContract": "#4513404285"
-        }
-        console.log();  
+        // and send it to the IPFS storage, which can be retrieved later on
         // store data of the product and get the CID
-        product1CID = await loadIpfs(product1Info); 
-        product2CID = await loadIpfs(product2Info);
+        sendProduct1 = await loadIpfs("1845678901001", // barcode
+                                    1100,               // quantity
+                                    "Gala Apples",      // productName
+                                    "01/01/2023",       // produceDate
+                                    "20/01/2023",       // expiryDate
+                                    "Sydney Orchard",   // producer
+                                    "Newcastle, NSW",   // location
+                                    "0403332323",       // phone
+                                    "hello@sydneyorchard.com.au",   // email
+                                    "apples",           // description
+                                    "#4513404285");     // saleContract
+        sendProduct2 = await loadIpfs("3690278390461", // barcode
+                                    2000,               // quantity
+                                    "Orange(Navel)",      // productName
+                                    "04/01/2023",       // produceDate
+                                    "31/01/2023",       // expiryDate
+                                    "Schofields Orchard",   // producer
+                                    "Richmond, NSW",   // location
+                                    "0411119701",       // phone
+                                    "schosons@bigpond.com",   // email
+                                    "oranges",           // description
+                                    "#4513404232");     // saleContract
+        // productInfo = sendProduct1[0]
+        product1CID = sendProduct1[1];  // the ID of the product in IPFS
+        product2CID = sendProduct2[1];  
         // verify the data stored is correct in IPFS 
         let retrieveData1 = await getIpfs(product1CID); 
         let retrieveData2 = await getIpfs(product2CID);
-        assert.equal(JSON.stringify(product1Info), retrieveData1, "the data stored on IPFS is the same");
-        assert.equal(JSON.stringify(product2Info), retrieveData2, "the data stored on IPFS is the same"); 
+        assert.equal(JSON.stringify(sendProduct1[0]), retrieveData1, "the data stored on IPFS is the same");
+        assert.equal(JSON.stringify(sendProduct2[0]), retrieveData2, "the data stored on IPFS is the same"); 
     });
 
     it('Contract owner authorising two producers', async() => {
@@ -126,7 +122,6 @@ contract('Product', (accounts) => {
         await productInstance.addProduct(product1Hash, temperature, string1CID, { from: producer1 })
         await productInstance.getPastEvents().then((ev) => batchID1 = ev[0].args[0]);
         await productInstance.addProduct(product2Hash, temperature, string2CID, { from: producer2 })
-        console.log(batchID)
         await productInstance.getPastEvents().then((ev) => batchID2 = ev[0].args[0]); 
 
         // get the product infromation 
@@ -159,7 +154,7 @@ contract('Product', (accounts) => {
         let signature = certData[1]; 
         // producer1 adds certificate to the product2
         // it should be return false only owner can call this function 
-        await productInstance.addCertificate(batchID2, certificate, signature, { from: producer1 }); 
+        await truffleAssertions.fails(productInstance.addCertificate(batchID2, certificate, signature, { from: producer1 })); 
     });
 
     it('Producer adding certificate to the product', async() => {
@@ -222,13 +217,13 @@ contract('Product', (accounts) => {
     it('Wrong producer transferring ownership to the distributor', async() => {
         // producer1 transfer ownership of the product2 to the distributor
         // it should be return false only owner can call this function
-        await productInstance.updateOwner(batchID1, newProductHash, distributor, { from: producer2 });
+        await truffleAssertions.fails(productInstance.updateOwner(batchID1, newProductHash, distributor, { from: producer2 }));
     }); 
 
     it('Wrong product transferring ownership to the distributor', async() => {
         // producer1 transfer ownership of the product2 to the distributor
         // it should be return false only owner can call this function
-        await productInstance.updateOwner(batchID2, newProductHash, distributor, { from: producer2 });
+        await truffleAssertions.fails(productInstance.updateOwner(batchID2, newProductHash, distributor, { from: producer2 }));
     });
 
     it('Producer transferring ownership of product1 to the distributor', async() => {
