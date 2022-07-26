@@ -109,7 +109,7 @@ contract('Product', (accounts) => {
         assert.isTrue(verifyProducer2, "check if producer authorised in contract"); 
     });
 
-    it('Producer adding product to the product contract', async() => {
+    it('Producers adding products to the product contract', async() => {
         // retrieve data from the file storage 
         let retrieveData1 = await getIpfs(product1CID);
         let retrieveData2 = await getIpfs(product2CID); 
@@ -159,7 +159,7 @@ contract('Product', (accounts) => {
         await truffleAssertions.fails(productInstance.addCertificate(batchID2, certificate, signature, { from: producer1 })); 
     });
 
-    it('Producer adding certificate to the product', async() => {
+    it('Producers adding certificates to the product', async() => {
         // CA generates certificate for product batch 
         let certData1 = await generateCertificate(batchID1, CA[1]);
         let certData2 = await generateCertificate(batchID2, CA[1]);
@@ -209,7 +209,7 @@ contract('Product', (accounts) => {
 
         // assert the on chain hash of batch2 is not that of batch1
         onchainHash = await productInstance.getProduct.call(batchID2, { from: distributor }); 
-        assert.notEqual(onchainHash[0], newProductHash, "check if newly computed product hash is the same as stored on-chain");
+        assert.notEqual(onchainHash[0], newProductHash, "the hash for batch1 data should not match batch2 data");
     }); 
 
     // the certificate is ligitimate and data off-chain has not been tampered 
