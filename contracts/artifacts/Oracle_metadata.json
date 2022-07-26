@@ -9,7 +9,7 @@
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "serverAddr",
+						"name": "_owner",
 						"type": "address"
 					}
 				],
@@ -36,20 +36,33 @@
 				"type": "event"
 			},
 			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "bytes32",
-						"name": "batchId",
+						"name": "_batchID",
 						"type": "bytes32"
 					},
 					{
 						"internalType": "uint256",
-						"name": "data",
+						"name": "_data",
 						"type": "uint256"
 					},
 					{
 						"internalType": "address",
-						"name": "caller",
+						"name": "_caller",
 						"type": "address"
 					}
 				],
@@ -68,26 +81,13 @@
 				"inputs": [
 					{
 						"internalType": "bytes32",
-						"name": "batchId",
+						"name": "_batchID",
 						"type": "bytes32"
 					}
 				],
 				"name": "requestData",
 				"outputs": [],
 				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "trustedServer",
-				"outputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
 				"type": "function"
 			}
 		],
@@ -119,27 +119,27 @@
 	},
 	"sources": {
 		"contracts/Oracle.sol": {
-			"keccak256": "0xc516de259b9e55da6b2056d9a458531a2a9fcd0d1724f7dffc19ff382f427259",
+			"keccak256": "0x2dc2c405d9de8f7715e73bbeaf82da3fca79fb18c4677c07fb5262f8deed060e",
 			"license": "UNLICENSED",
 			"urls": [
-				"bzz-raw://6480b98e0cdd74be6296f25b24592b247d866ac3acd9515a59d733f3c82c0689",
-				"dweb:/ipfs/QmNNji7Qw48erUoswVJsmeD7pka9uv91mnHNyR4a1u2nSA"
+				"bzz-raw://62e6fa106edb2f16487e327395d6f576b5979550ea530a013a6782bd9f8c55a4",
+				"dweb:/ipfs/QmXHkjoxQn2LYWvKqAdkXs4fHEsYzKKDjajbiWxfH1fCoW"
 			]
 		},
 		"contracts/OracleClient.sol": {
-			"keccak256": "0x21c0662c494625f8e8c6057e5df82a5df07222e1190d74cb867e3e28df03fb7f",
+			"keccak256": "0xb30ce7a89290ab439f67123bdbdc087a32b83b53777e8f8cb96e7a9a02e6cbdc",
 			"license": "UNLICENSED",
 			"urls": [
-				"bzz-raw://9ea740d7de439929d82282b775bd6d8ac30f5fe887a4dd5d3379ad1c66f9c2d1",
-				"dweb:/ipfs/QmVviBEgGhSEJNDKsESGpQuPUYgg7yAwQ5V5BDqkuP9Yuj"
+				"bzz-raw://4f6ac89e9123b443bb5b2175d507e74cca8087f7b82ba62533900805171b9363",
+				"dweb:/ipfs/QmRywgtJh1THFBrL9Vavv1conpuAFDP21aVXfaLgXZ4rUm"
 			]
 		},
 		"contracts/OracleInterface.sol": {
-			"keccak256": "0xdb9ca93087c99e52a43e66c6366bf15738f13e121c88c68656123f38490d3016",
+			"keccak256": "0xee5af48b2dc39252e794be24747020749edc7dcefa0c3a9b5a79988476741838",
 			"license": "UNLICENSED",
 			"urls": [
-				"bzz-raw://75fdc19c6e53959ac57b5a5a9f88944f4f78311d2c06d9e656072ee3bc909911",
-				"dweb:/ipfs/QmfGRvEQHPhQVpdsnMBxAbcdF4UstgX7zPkVvbWNCPt5yr"
+				"bzz-raw://61b9d0bbdfb9a5664d6cdb9003efc776db4dfa3dc63de23ed6b37dca6979586a",
+				"dweb:/ipfs/QmbyTS9orR1BWwK9MEYuFa32ZZks3pK5Hu5x9BDGbF7vtx"
 			]
 		}
 	},

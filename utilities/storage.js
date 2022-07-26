@@ -38,7 +38,7 @@ async function loadIpfs(_barcode, _quantity, _name, _produced, _expiry, _produce
     const file = await node.add(data); 
     // unique ID of the product data
     const cid = file.cid; 
-    console.log(); 
+    // console.log(); 
     // return the identifier to producer
     return [product, cid]; 
 }
@@ -63,4 +63,12 @@ async function getIpfs(_CID) {
 }
 
 
-module.exports = { initGlobalIpfs, loadIpfs, getIpfs }
+/**
+ * Shutdown the running IPFS node when called
+ **/
+async function stopIpfs() {
+    await node.stop(); 
+}
+
+
+module.exports = { initGlobalIpfs, loadIpfs, getIpfs, stopIpfs }

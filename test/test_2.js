@@ -7,7 +7,7 @@ const truffleAssert = require('truffle-assertions');
 const assert = require("chai").assert;
 const truffleAssertions = require("truffle-assertions");
 const { authorityKeys, generateCertificate } = require('../utilities/certificate.js'); 
-const { initGlobalIpfs, loadIpfs, getIpfs } = require('../utilities/storage'); 
+const { initGlobalIpfs, loadIpfs, getIpfs, stopIpfs } = require('../utilities/storage'); 
 const { fetchTemperature } = require('../utilities/temperature'); 
 
 contract('Product', (accounts) => {
@@ -37,11 +37,16 @@ contract('Product', (accounts) => {
 
         console.log("\nContracts deployed and IPFS node initialised..."); 
         await initGlobalIpfs();   // initiate a global IPFS node for user 
+        console.log();
 
         await web3.eth.getBalance(productInstance.address).then((balance) => {
 			assert.equal(balance, 0, "check balance of contract"); 
 		});
     }); 
+
+    after('Closing IPFS node', async() => {
+        await stopIpfs(); 
+    })
 
     // ------------------------------------------------------------------------------------------------
 
