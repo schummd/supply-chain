@@ -226,12 +226,6 @@ contract('Product', (accounts) => {
         await truffleAssertions.fails(productInstance.updateOwner(batchID1, newProductHash, distributor, { from: producer2 }));
     }); 
 
-    it('Wrong producer transferring ownership to the distributor', async() => {
-        // producer1 transfer ownership of the product2 to the distributor
-        // it should be return false only owner can call this function
-        await truffleAssertions.fails(productInstance.updateOwner(batchID2, newProductHash, distributor, { from: producer2 }));
-    });
-
     it('Producer owning two products on chain', async() => {
         sendProduct3 = await loadIpfs("3690278390461", // barcode
         2000,               // quantity
