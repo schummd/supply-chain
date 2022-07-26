@@ -292,16 +292,16 @@ contract('Product', (accounts) => {
                 await fetchTemperature(9, 15).then(async(response) => {//the required temperature of product1 is set to 8
                     console.log('Temperature from thermometers '+response)
                     await oracleInstance.replyTemp(ev[0].args[0], response, productInstance.address, { from: oracle });
-
-                    // assert this does not affect product 2 status
-                    status = await productInstance.getStatus.call(batchID2);
-                    assert.isTrue(status, "check if status is true");
                 }); 
             }); 
         }); 
         // verify status was changed because temperature is too high 
         status = await productInstance.getStatus.call(batchID1);
         assert.isFalse(status, "check if status is false");
+
+         // assert this does not affect product 2 status
+         status = await productInstance.getStatus.call(batchID2);
+         assert.isTrue(status, "check if status is true");
     });
 
 
