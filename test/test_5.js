@@ -242,6 +242,10 @@ contract('Product', (accounts) => {
                 await fetchTemperature(9, 15).then(async(response) => {//the required temperature of product1 is set to 8
                     console.log('Temperature from thermometers '+response)
                     await oracleInstance.replyTemp(ev[0].args[0], response, productInstance.address, { from: oracle });
+
+                    // assert this does not affect product 2 status
+                    status = await productInstance.getStatus.call(batchID2);
+                    assert.isTrue(status, "check if status is true");
                 }); 
             }); 
         }); 
@@ -249,52 +253,3 @@ contract('Product', (accounts) => {
         status = await productInstance.getStatus.call(batchID1);
         assert.isFalse(status, "check if status is false");
     });
-
-    it('Temporarily disabling contract to conduct hardware checks', async() => {
-        // since the disabling contract can be called by the contract owner, 
-        // the current batch owner has to contract off-chain the manager;
-        // then manager / contract owner halts the contract 
-        await productInstance.emergencyHalt({ from: owner }); 
-        status = await productInstance.checkHalt.call({ from: producer2 }); 
-        assert.isTrue(status, "check if contract is on pause"); 
-    }); 
-
-    it('Producer attempts to change status back while halt is on', async() => {
-        await truffleAssertions.fails(productInstance.updateStatus(batchID2, true, { from: producer2 }), "contract halt");
-    });
-
-    it('Contract owner re-activating contract', async() => {
-        // after physical examination of the hardware and ensurance there
-        // is no issue with the storage, the batch owner notifies contract
-        // manager that the contract can be reactivated, and owner 
-        // reactivates the contract 
-        await productInstance.restartContract({ from: owner }); 
-        status = await productInstance.checkHalt.call({ from: producer1 }); 
-        assert.isFalse(status, "check if contract is active"); 
-    }); 
-
-    it('Product owner resetting status after physical checks', async() => {
-        // after notification of incorrect temperature, the current batch
-        // owner can conduct physical inspection of the product and verify
-        // whether the temperature within norm and there were some malfunction
-        // with termometer; in such case, owner can reset the status to true 
-        await productInstance.updateStatus(batchID2, true, { from: producer2 }); 
-        // verify status was changed because temperature is too high 
-        status = await productInstance.getStatus.call(batchID2);
-        assert.isTrue(status, "check if status has been reset");
-    }); 
-
-    it('Oracle requesting temperature, the actual temperature is lower than required of product2', async() => {
-        await productInstance.getTemperature(batchID1).then(async() => {
-            await oracleInstance.getPastEvents('request').then(async(ev) => {
-                await fetchTemperature(1, 5).then(async(response) => {
-                    console.log('Temperature from thermometers '+response)
-                    await oracleInstance.replyTemp(ev[0].args[0], response, productInstance.address, { from: oracle });
-                }); 
-            }); 
-        });
-        // verify status was changed because temperature is too high 
-        status = await productInstance.getStatus.call(batchID2);
-        assert.isTrue(status, "check if status is true");
-    });
-})
