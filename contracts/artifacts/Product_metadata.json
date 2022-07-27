@@ -53,19 +53,6 @@
 				"type": "event"
 			},
 			{
-				"anonymous": false,
-				"inputs": [
-					{
-						"indexed": false,
-						"internalType": "bytes32",
-						"name": "_batchID",
-						"type": "bytes32"
-					}
-				],
-				"name": "temperatureReq",
-				"type": "event"
-			},
-			{
 				"inputs": [
 					{
 						"internalType": "bytes32",
@@ -619,11 +606,11 @@
 			]
 		},
 		"contracts/Product.sol": {
-			"keccak256": "0xd39b0701df8a46530d628e06f0459e10d76fe13a648a5a44acbd19158e837865",
+			"keccak256": "0x7bfa8beaa326d3040c7b98f1bd7998faef556da2cdd697279f096839a0964cb6",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://d3c163c031d2c8c41219649caea83f15a72be6e6c476a77742cf212d0794b454",
-				"dweb:/ipfs/QmZFEvzJ2RwHaqFpDn7q2tGDDbsmG7ctM7NHtC51XXiqwt"
+				"bzz-raw://d76f3da6f524db8c34bf33bedf911d07165cff6fe5768e4468db6c6d6ec712d3",
+				"dweb:/ipfs/QmZE6sSH6aD8jD4jVhwGcQz2CmjUSkvz1KQU3TS3SeEYiu"
 			]
 		}
 	},

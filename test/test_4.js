@@ -228,16 +228,16 @@ contract('Product', (accounts) => {
 
     it('Producer owning two products on chain', async() => {
         sendProduct3 = await loadIpfs("3690278390461", // barcode
-        2000,               // quantity
-        "Grapes",      // productName
-        "04/01/2023",       // produceDate
-        "31/01/2023",       // expiryDate
-        "Schofields Orchard",   // producer
-        "Richmond, NSW",   // location
-        "0411119701",       // phone
-        "schosons@bigpond.com",   // email
-        "oranges",           // description
-        "#4513404337");     // saleContract
+                                        2000,               // quantity
+                                        "Grapes",      // productName
+                                        "04/01/2023",       // produceDate
+                                        "31/01/2023",       // expiryDate
+                                        "Schofields Orchard",   // producer
+                                        "Richmond, NSW",   // location
+                                        "0411119701",       // phone
+                                        "schosons@bigpond.com",   // email
+                                        "oranges",           // description
+                                        "#4513404337");     // saleContract
         // productInfo = sendProduct1[0]
         product3CID = sendProduct3[1]; 
         // generate hash of the data 
@@ -284,7 +284,7 @@ contract('Product', (accounts) => {
         await productInstance.getTemperature(batchID1).then(async() => {
             await oracleInstance.getPastEvents('request').then(async(ev) => {
                 await fetchTemperature(9, 15).then(async(response) => {//the required temperature of product1 is set to 8
-                    console.log('Temperature from thermometers '+response)
+                    // console.log('Temperature from thermometers '+response)
                     await oracleInstance.replyTemp(ev[0].args[0], response, productInstance.address, { from: oracle });
                 }); 
             }); 
