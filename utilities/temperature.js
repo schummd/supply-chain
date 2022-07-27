@@ -1,4 +1,4 @@
-
+const fetch = require('node-fetch');
 
 async function fetchTemperature(min, max) {
     // fetch temperature 
