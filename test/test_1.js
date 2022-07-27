@@ -173,6 +173,8 @@ contract('Product', (accounts) => {
     it('Distributor verifying the certificate of the batch', async() => {
         let verification = await productInstance.verifyCertificate(batchID, { from: distributor });
         assert.isTrue(verification, "batch certificate was signed by a valid authority"); 
+
+        // console.log("    > verifying the certificate:", verification); 
     });
 
     it('Distributor verifying off-chain data to on-chain hash', async() => {
